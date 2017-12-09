@@ -1,6 +1,9 @@
-#puppeteer-request-spy
+# puppeteer-request-spy
+
 The RequestInterceptor was build and tested with minimatch but minimatch is not included in the package. This allows the matching function to be replaced with custom matchers.
+
 ## Install
+
 ```bash
 npm install puppeteer-request-spy
 ```
