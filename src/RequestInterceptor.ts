@@ -19,7 +19,7 @@ export class RequestInterceptor {
         this.matcher = matcher;
     }
 
-    public intercept(interceptedUrl: Request): void {
+    public async intercept(interceptedUrl: Request): Promise<void> {
         let aborted: boolean = false;
 
         for (let spy of this.spies) {
@@ -33,12 +33,12 @@ export class RequestInterceptor {
         for (let urlToBlock of this.urlsToBlock) {
             if (this.matcher(interceptedUrl.url, urlToBlock)) {
                 aborted = true;
-                this.blockUrl(interceptedUrl);
+                await this.blockUrl(interceptedUrl);
             }
         }
 
         if (aborted === false) {
-            this.acceptUrl(interceptedUrl);
+            await this.acceptUrl(interceptedUrl);
         }
     }
 
@@ -62,15 +62,23 @@ export class RequestInterceptor {
         this.urlsToBlock = urlsToBlock;
     }
 
-    private blockUrl(interceptedUrl: Request): void {
+    private async blockUrl(interceptedUrl: Request): Promise<void> {
         this.logger.log(`aborted: ${interceptedUrl.url}`);
 
-        interceptedUrl.abort();
+        try {
+            await interceptedUrl.abort();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    private acceptUrl(interceptedUrl: Request): void {
+    private async acceptUrl(interceptedUrl: Request): Promise<void> {
         this.logger.log(`loaded: ${interceptedUrl.url}`);
 
-        interceptedUrl.continue();
+        try {
+            await interceptedUrl.continue();
+        } catch (error) {
+            console.error(error);
+        }
     }
 }

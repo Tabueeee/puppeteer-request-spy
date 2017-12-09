@@ -112,7 +112,7 @@
         "chai-vague-errors": true,
         "class-name": true,
         "comment-format": true,
-        "completed-docs": [true, "classes"],
+        "completed-docs": false,
         "export-name": true,
         "function-name": true,
         "import-name": true,

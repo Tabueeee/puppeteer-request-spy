@@ -116,7 +116,9 @@ examples/
 .env
 src/**/*.ts
 test/**/*.ts
+build/test/**/*.js
 test/**/fakes/
 tsconfig.json
 tslint.json
 typings.json
+build/**/*.js.map
