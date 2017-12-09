@@ -114,9 +114,8 @@ examples/
 
 # dotenv environment variables file
 .env
-
-src/
-test/
+src/**/*.ts
+test/**/*.ts
 tsconfig.json
 tslint.json
 typings.json

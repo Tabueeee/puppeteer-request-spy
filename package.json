@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-request-spy",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "simple request spy helper for testing with puppeteer",
   "main": "build/src/index.js",
   "scripts": {
