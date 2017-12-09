@@ -1,0 +1,9 @@
+{
+  "globalDevDependencies": {
+    "sinon": "registry:dt/sinon#1.16.1+20161208163514"
+  },
+  "devDependencies": {
+    "minimatch": "registry:npm/minimatch#3.0.0+20170119000329",
+    "nock": "registry:dt/nock#8.2.0+20170213215926"
+  }
+}

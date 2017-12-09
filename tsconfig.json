@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": false,
+    "target": "ES2015",
+    "lib": ["es6"],
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "allowUnreachableCode": false,
+    "downlevelIteration": true,
+    "locale": "en-us",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "stripInternal": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "./build",
+    "typeRoots": [
+      "typings/globals",
+      "typings/modules",
+      "typings/custom"
+    ]
+  },
+  "include": [
+    "./**/*.ts",
+    "./typings/index"
+  ]
+}
