@@ -47,5 +47,9 @@
     "source-map-support": "^0.5.0",
     "static-server": "^3.0.0",
     "typescript": "^2.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tabueeee/puppeteer-request-spy.git"
   }
 }
