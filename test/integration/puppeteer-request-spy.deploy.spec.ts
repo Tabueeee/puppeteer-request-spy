@@ -73,7 +73,7 @@ describe('puppeteer-request-spy: integration', function (): void {
             requestInterceptor.addSpy(secondRequestSpy);
             requestInterceptor.addSpy(notMatchingRequestSpy);
 
-            await page.setRequestInterception(true);
+            await page.setRequestInterception(false);
             page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
             await page.goto(`${staticServerIp}/index.html`, {
                 waitUntil: 'networkidle0',
@@ -101,6 +101,29 @@ describe('puppeteer-request-spy: integration', function (): void {
                 // @ts-ignore: ignore error to test invalid input from js
                 let requestSpy: RequestSpy = new RequestSpy(3);
             });
+        });
+
+        it('requestInterceptor blocks all matched requests', async function (): Promise<void> {
+            let logs: Array<string> = [];
+            let expectedLogs: Array<string> = [
+                'AssertionError: Request Interception is not enabled!',
+                'AssertionError: Request Interception is not enabled!',
+                'AssertionError: Request Interception is not enabled!'
+            ];
+
+            let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch, getLoggerFake(logs));
+            requestInterceptorWithLoggerFake.setUrlsToBlock([`**/*.css`]);
+            requestInterceptorWithLoggerFake.block([`${staticServerIp}/*.js`, '**/*.ico']);
+
+            await page.setRequestInterception(false);
+            page.on('request', requestInterceptorWithLoggerFake.intercept.bind(requestInterceptorWithLoggerFake));
+
+            await page.goto(`${staticServerIp}/index.html`, {
+                waitUntil: 'networkidle0',
+                timeout: 3000000
+            });
+
+            assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
         });
     });
 });

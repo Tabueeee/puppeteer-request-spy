@@ -15,10 +15,21 @@ export function getRequestSpyDouble(): TestDouble<RequestSpy> {
 }
 
 export function getRequestDouble(): TestDouble<Request> {
-    // noinspection TsLint
     return {
-        'continue': sinon.spy(),
+        continue: sinon.spy(),
         abort: sinon.spy(),
+        url: 'any-url'
+    };
+}
+
+export function getErrorRequestDouble(): TestDouble<Request> {
+    return {
+        continue: async (): Promise<void> => {
+            throw new Error('requestInterception is not set');
+        },
+        abort: async (): Promise<void> => {
+            throw new Error('requestInterception is not set');
+        },
         url: 'any-url'
     };
 }

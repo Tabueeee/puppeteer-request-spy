@@ -1,7 +1,7 @@
 {
   "name": "puppeteer-request-spy",
-  "version": "1.0.5",
-  "description": "simple request spy helper for testing with puppeteer",
+  "version": "1.0.6",
+  "description": "watch or block requests from puppeteer matching patterns",
   "main": "build/src/index.js",
   "scripts": {
     "prebuild": "tslint --project tsconfig-lint.json",

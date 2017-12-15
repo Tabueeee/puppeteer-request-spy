@@ -19,20 +19,6 @@
           <option name="ALIGN_VAR_STATEMENTS" value="2" />
           <option name="USE_DOUBLE_QUOTES" value="false" />
         </JSCodeStyleSettings>
-        <PHPCodeStyleSettings>
-          <option name="ALIGN_KEY_VALUE_PAIRS" value="true" />
-          <option name="ALIGN_PHPDOC_PARAM_NAMES" value="true" />
-          <option name="ALIGN_PHPDOC_COMMENTS" value="true" />
-          <option name="ALIGN_ASSIGNMENTS" value="true" />
-          <option name="PHPDOC_BLANK_LINES_AROUND_PARAMETERS" value="true" />
-          <option name="PHPDOC_THROWS_CALL_TREE_ANALYSIS_DEPTH" value="1" />
-          <option name="UPPER_CASE_NULL_CONST" value="true" />
-          <option name="LOWER_CASE_BOOLEAN_CONST" value="true" />
-          <option name="ELSE_IF_STYLE" value="SEPARATE" />
-          <option name="VARIABLE_NAMING_STYLE" value="CAMEL_CASE" />
-          <option name="BLANK_LINE_BEFORE_RETURN_STATEMENT" value="true" />
-          <option name="FORCE_SHORT_DECLARATION_ARRAY_STYLE" value="true" />
-        </PHPCodeStyleSettings>
         <TypeScriptCodeStyleSettings>
           <option name="FORCE_SEMICOLON_STYLE" value="true" />
           <option name="FIELD_PREFIX" value="" />

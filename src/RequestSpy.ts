@@ -6,13 +6,15 @@ export class RequestSpy {
     private patterns: Array<string> = [];
 
     public constructor(patterns: Array<string> | string) {
-        if (typeof patterns === 'string') {
-            this.patterns = [patterns];
-        } else if (patterns.constructor === Array) {
-            this.patterns = patterns;
-        } else {
+        if (typeof patterns !== 'string' && patterns.constructor !== Array) {
             throw new Error('invalid pattern, pattern must be of type string or string[].');
         }
+
+        if (typeof patterns === 'string') {
+            patterns = [patterns];
+        }
+
+        this.patterns = patterns;
     }
 
     public hasMatch(): boolean {

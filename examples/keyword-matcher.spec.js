@@ -1,7 +1,6 @@
 const puppeteer          = require('puppeteer');
 const RequestInterceptor = require('puppeteer-request-spy').RequestInterceptor;
 const RequestSpy         = require('puppeteer-request-spy').RequestSpy;
-const minimatch          = require('minimatch');
 const assert             = require('assert');
 
 let browser;
@@ -19,32 +18,33 @@ after(async () => {
 describe('example-block', function () {
 
     this.timeout(30000);
-    this.slow(10000);
+    this.slow(20000);
 
     let requestInterceptor;
-    let secondaryRequestSpy;
+    let imagesSpy;
 
     before(() => {
-        requestInterceptor  = new RequestInterceptor(minimatch, console);
-        secondaryRequestSpy = new RequestSpy('!https://www.example.org/');
+        imagesSpy           = new RequestSpy('images');
+        requestInterceptor = new RequestInterceptor(
+            (testee, pattern) => testee.indexOf(pattern) > -1,
+            console
+        );
 
-        requestInterceptor.addSpy(secondaryRequestSpy);
-        requestInterceptor.block('!https://www.example.org/');
+        requestInterceptor.addSpy(imagesSpy);
     });
 
     describe('example-block', function () {
         it('example-test', async function () {
             let page = await browser.newPage();
 
-            page.setRequestInterception(true);
             page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
 
-            await page.goto('https://www.example.org', {
+            await page.goto('https://www.example.org/', {
                 waitUntil: 'networkidle0',
                 timeout: 3000000
             });
 
-            assert.ok(secondaryRequestSpy.hasMatch() && secondaryRequestSpy.getMatchCount() > 0);
+            assert.ok(imagesSpy.hasMatch() && imagesSpy.getMatchCount() > 0);
         });
     });
 });
