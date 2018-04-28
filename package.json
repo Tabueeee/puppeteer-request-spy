@@ -13,6 +13,7 @@
     "test-silent": "node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/isolation/**/*.dev.spec.js > test-ts.log",
     "pretest-coverage": "npm run build-dev",
     "test-coverage": "node_modules/.bin/nyc --all --reporter=html npm run test-silent",
+    "pretest-coverage-travis": "npm run build-dev",
     "test-coverage-travis": "node_modules/.bin/nyc --all --reporter=text-lcov npm run test-silent | node node_modules/coveralls/bin/coveralls.js"
   },
   "engines": {
