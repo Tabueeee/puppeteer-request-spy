@@ -3,11 +3,12 @@ import {Request} from 'puppeteer';
 import * as sinon from 'sinon';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
+import {ResponseFaker} from '../../src/ResponseFaker';
 import {TestDouble} from '../common/TestDouble';
-import {getErrorRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
+import {getErrorRequestDouble, getLowVersionRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
 
-describe('puppeteer-request-spy: unit', function (): void {
-    describe('happy path', function (): void {
+describe('puppeteer-request-spy: unit', (): void => {
+    describe('happy path', (): void => {
         let requestInterceptor: RequestInterceptor;
 
         before(() => {
@@ -18,9 +19,10 @@ describe('puppeteer-request-spy: unit', function (): void {
         beforeEach(() => {
             requestInterceptor.clearUrlsToBlock();
             requestInterceptor.clearSpies();
+            requestInterceptor.clearFakers();
         });
 
-        it('increases count for matched urls', async function (): Promise<void> {
+        it('increases count for matched urls', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy('some/pattern/**/*');
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -32,7 +34,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             assert.equal(requestSpy.getMatchCount(), 3, 'requestSpy did not increase count on match');
         });
 
-        it('adds matched urls to array', async function (): Promise<void> {
+        it('adds matched urls to matchedUrls array', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy('some/pattern/**/*');
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -52,7 +54,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             );
         });
 
-        it('does have hasMatch on matched urls', async function (): Promise<void> {
+        it('sets hasMatch flag on RequestSpy for matched urls', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy('some/pattern/**/*');
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -64,7 +66,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             assert.ok(requestSpy.hasMatch(), 'requestSpy did not match url');
         });
 
-        it('blocks request if urlsToBlock is added and matched', async function (): Promise<void> {
+        it('blocks request if urlsToBlock is added and matched', async (): Promise<void> => {
             let request: TestDouble<Request> = getRequestDouble();
 
             requestInterceptor.block(['']);
@@ -74,9 +76,36 @@ describe('puppeteer-request-spy: unit', function (): void {
 
             assert.equal(request.abort.callCount, 3, 'requestIntercept blocked to few requests');
         });
+
+        it('fakes request if RequestFaker is added and matched', async (): Promise<void> => {
+            let request: TestDouble<Request> = getRequestDouble();
+
+            requestInterceptor.addFaker(new ResponseFaker('some/pattern/**/*', {
+                status: 200,
+                contentType: 'text/plain',
+                body: 'payload'
+            }));
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.equal(request.respond.callCount, 3, 'requestIntercept faked to few requests');
+        });
+
+        it('supports old Request version', async (): Promise<void> => {
+            let request: TestDouble<Request> = getLowVersionRequestDouble();
+
+            requestInterceptor.block(['']);
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.equal(request.abort.callCount, 3, 'requestIntercept blocked to few requests');
+        });
+
     });
 
-    describe('sad path', function (): void {
+    describe('sad path', (): void => {
         let requestInterceptor: RequestInterceptor;
 
         before(() => {
@@ -87,9 +116,10 @@ describe('puppeteer-request-spy: unit', function (): void {
         beforeEach(() => {
             requestInterceptor.clearUrlsToBlock();
             requestInterceptor.clearSpies();
+            requestInterceptor.clearFakers();
         });
 
-        it('does not increase count for mismatched urls', async function (): Promise<void> {
+        it('does not increase count for mismatched urls', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy('some/pattern/**/*');
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -101,7 +131,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             assert.equal(requestSpy.getMatchCount(), 0, 'requestSpy increased match count');
         });
 
-        it('does not add mismatched urls to array', async function (): Promise<void> {
+        it('does not add mismatched urls to array', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy(['some/pattern/**/*', 'some/second/**/*']);
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -117,7 +147,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             );
         });
 
-        it('does not hasMatch on mismatched urls', async function (): Promise<void> {
+        it('does not hasMatch on mismatched urls', async (): Promise<void> => {
             let requestSpy: TestDouble<RequestSpy> = new RequestSpy('some/pattern/**/*');
             let request: TestDouble<Request> = getRequestDouble();
 
@@ -129,7 +159,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             assert.deepEqual(requestSpy.hasMatch(), false, 'requestSpy has a match');
         });
 
-        it('does not block request if urlsToBlock is set and not matched', async function (): Promise<void> {
+        it('does not block request if urlsToBlock is set and not matched', async (): Promise<void> => {
             let request: TestDouble<Request> = getRequestDouble();
 
             requestInterceptor.setUrlsToBlock(['']);
@@ -139,16 +169,32 @@ describe('puppeteer-request-spy: unit', function (): void {
 
             assert.equal(request.abort.callCount, 0, 'abort was called');
         });
+
+        it('does not fake request if RequestFaker is added and not matched', async (): Promise<void> => {
+            let request: TestDouble<Request> = getRequestDouble();
+
+            requestInterceptor.addFaker(new ResponseFaker('some/pattern/**/*', {
+                status: 200,
+                contentType: 'text/plain',
+                body: 'payload'
+            }));
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.equal(request.abort.callCount, 0, 'requestIntercept faked to few requests');
+        });
     });
-    describe('sad path', function (): void {
-        it('spy rejects invalid pattern', function (): void {
+
+    describe('sad path', (): void => {
+        it('spy rejects invalid pattern', (): void => {
             assert.throws(() => {
                 // @ts-ignore: ignore error to test invalid input from js
                 new RequestSpy(3).hasMatch();
             });
         });
 
-        it('no error if requestInterception is not set and request is aborted', async function (): Promise<void> {
+        it('no error if requestInterception is not set and request is aborted', async (): Promise<void> => {
             let error: Error | undefined;
             let request: TestDouble<Request> = getErrorRequestDouble();
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
@@ -165,7 +211,7 @@ describe('puppeteer-request-spy: unit', function (): void {
             assert.ok(typeof error === 'undefined', 'abort was called');
         });
 
-        it('no error if requestInterception is not set and request is continued', async function (): Promise<void> {
+        it('no error if requestInterception is not set and request is continued', async (): Promise<void> => {
             let error: Error | undefined;
             let request: TestDouble<Request> = getErrorRequestDouble();
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);

@@ -3,7 +3,7 @@ import {Browser, LaunchOptions} from 'puppeteer';
 
 export class BrowserLauncher {
 
-    private browser: Browser;
+    private browser: Browser | undefined;
 
     public async initialize(options?: LaunchOptions): Promise<void> {
         this.browser = await puppeteer.launch(options || {
@@ -12,13 +12,19 @@ export class BrowserLauncher {
     }
 
     public async closeBrowser(): Promise<void> {
-        await this.browser.close();
+        if (typeof this.browser !== 'undefined') {
+            await this.browser.close();
+        }
     }
 
     public getBrowser(): Browser {
+        if (typeof this.browser === 'undefined') {
+            throw new Error('unable to initialize browser.');
+        }
+
         return this.browser;
     }
 }
 
 export const browserLauncher: BrowserLauncher = new BrowserLauncher();
-
+

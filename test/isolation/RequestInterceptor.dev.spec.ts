@@ -4,12 +4,16 @@ import * as sinon from 'sinon';
 import {Logger} from '../../src/common/Logger';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
+import {ResponseFaker} from '../../src/ResponseFaker';
 import {TestDouble} from '../common/TestDouble';
-import {getErrorRequestDouble, getRequestDouble, getRequestSpyDouble} from '../common/testDoubleFactories';
+import {
+    getErrorRequestDouble, getLowVersionRequestDouble, getRequestDouble, getRequestFakerDouble,
+    getRequestSpyDouble
+} from '../common/testDoubleFactories';
 
-describe('class: RequestInterceptor', function (): void {
-    describe('happy path', function (): void {
-        it('spies gets called', async function (): Promise<void> {
+describe('class: RequestInterceptor', (): void => {
+    describe('happy path', (): void => {
+        it('calls RequestSpy when matched', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let requestSpy: TestDouble<RequestSpy> = getRequestSpyDouble();
@@ -18,10 +22,10 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatchedUrl.callCount === 1 && requestSpy.getPatterns.called === true, '');
+            assert.ok(requestSpy.addMatchedUrl.callCount === 1 && requestSpy.getPatterns.called === true);
         });
 
-        it('spies does not get called', async function (): Promise<void> {
+        it('does not call RequestSpy when not matched', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
@@ -30,10 +34,46 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatchedUrl.callCount === 0 && requestSpy.getPatterns.called === true, '');
+            assert.ok(requestSpy.addMatchedUrl.callCount === 0 && requestSpy.getPatterns.called === true);
         });
 
-        it('clears list of spies', async function (): Promise<void> {
+        it('calls ResponseFaker when matched', async (): Promise<void> => {
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble();
+            let request: TestDouble<Request> = getRequestDouble();
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 1 && responseFakerTestDouble.getPatterns.called === true);
+        });
+
+        it('does not call ResponseFaker when not matched', async (): Promise<void> => {
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble();
+            let request: TestDouble<Request> = getRequestDouble();
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.getPatterns.called === true);
+        });
+
+        it('accepts old Request version', async (): Promise<void> => {
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+            let requestSpy: TestDouble<RequestSpy> = getRequestSpyDouble();
+            let request: TestDouble<Request> = getLowVersionRequestDouble();
+            requestInterceptor.addSpy(<RequestSpy> requestSpy);
+
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.ok(requestSpy.addMatchedUrl.callCount === 1 && requestSpy.getPatterns.called === true);
+        });
+
+        it('clears list of RequestSpy', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let requestSpy: TestDouble<RequestSpy> = getRequestSpyDouble();
@@ -46,10 +86,27 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatchedUrl.callCount === 0 && requestSpy.getPatterns.called === false, '');
+            assert.ok(requestSpy.addMatchedUrl.callCount === 0 && requestSpy.getPatterns.called === false);
         });
 
-        it('continue does not get called if abort was called', async function (): Promise<void> {
+        it('clears list of RequestFaker', async (): Promise<void> => {
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+            let request: TestDouble<Request> = getRequestDouble();
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble();
+
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+
+            requestInterceptor.clearFakers();
+
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.getPatterns.called === false);
+        });
+
+        it('does not call continue nor respond if abort was called', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
@@ -57,10 +114,10 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(request.continue.callCount === 0 && request.abort.callCount === 1, '');
+            assert.ok(request.continue.callCount === 0 && request.respond.callCount === 0 && request.abort.callCount === 1);
         });
 
-        it('abort does not get called if continue was called', async function (): Promise<void> {
+        it('does not call abort nor respond if continue was called', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
@@ -68,10 +125,22 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(request.continue.callCount === 1 && request.abort.callCount === 0, '');
+            assert.ok(request.continue.callCount === 1 && request.abort.callCount === 0 && request.respond.callCount === 0);
         });
 
-        it('logs when debug is set and request is not blocked', async function (): Promise<void> {
+        it('does not call abort nor continue if respond was called', async (): Promise<void> => {
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+            let request: TestDouble<Request> = getRequestDouble();
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble();
+            requestInterceptor.addFaker(<ResponseFaker> responseFakerTestDouble);
+
+            await requestInterceptor.intercept(<Request> request);
+
+            assert.ok(request.continue.callCount === 0 && request.abort.callCount === 0 && request.respond.callCount === 1);
+        });
+
+        it('calls logger when debug is set and request is not blocked', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let loggerDouble: TestDouble<Logger> = {log: sinon.spy()};
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <Logger> loggerDouble);
@@ -81,10 +150,10 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(loggerDouble.log.callCount === 1, '');
+            assert.ok(loggerDouble.log.callCount === 1);
         });
 
-        it('logs when debug is set and request is blocked', async function (): Promise<void> {
+        it('calls logger when debug is set and request is blocked', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let loggerDouble: TestDouble<Logger> = {log: sinon.spy()};
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <Logger> loggerDouble);
@@ -93,10 +162,10 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(loggerDouble.log.callCount === 1, `${loggerDouble.log.callCount} !== 1`);
+            assert.ok(loggerDouble.log.callCount === 1);
         });
 
-        it('does not block requests if UrlsToBlock was cleared', async function (): Promise<void> {
+        it('RequestInterceptor clears list of urls to block', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
@@ -105,10 +174,10 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(request.continue.callCount === 1 && request.abort.callCount === 0, '');
+            assert.ok(request.continue.callCount === 1 && request.abort.callCount === 0);
         });
 
-        it('does block requests if UrlsToBlock were set manually', async function (): Promise<void> {
+        it('blocks requests if UrlsToBlock was set manually', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
@@ -117,12 +186,12 @@ describe('class: RequestInterceptor', function (): void {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(request.continue.callCount === 0 && request.abort.callCount === 1, '');
+            assert.ok(request.continue.callCount === 0 && request.respond.callCount === 0 && request.abort.callCount === 1);
         });
     });
 
-    describe('sad path', function (): void {
-        it('proceeds without error when requestInterception is disabled on abort', async function (): Promise<void> {
+    describe('sad path', (): void => {
+        it('proceeds without error when requestInterception is disabled on abort', async (): Promise<void> => {
             let error: Error | undefined;
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
@@ -138,7 +207,7 @@ describe('class: RequestInterceptor', function (): void {
             assert.ok(typeof error === 'undefined');
         });
 
-        it('proceeds without error when requestInterception is disabled on continue', async function (): Promise<void> {
+        it('proceeds without error when requestInterception is disabled', async (): Promise<void> => {
             let error: Error | undefined;
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);

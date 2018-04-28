@@ -114,11 +114,12 @@ examples/
 
 # dotenv environment variables file
 .env
-src/**/*.ts
-test/**/*.ts
-build/test/**/*.js
-test/**/fakes/
+src/
+build/test/
+test/
 tsconfig.json
+tsconfig-lint.json
 tslint.json
 typings.json
 build/**/*.js.map
+.travis.yml

@@ -11,7 +11,7 @@ export class ServerDouble {
 
     public async start(): Promise<{}> {
         return new Promise((resolve: () => void): void => {
-            this.server.start(function (): void {
+            this.server.start((): void => {
                 resolve();
             });
         });

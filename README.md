@@ -4,7 +4,8 @@
 
 - allows you to write tests verifying specific resources getting requested as expected
 - allows you to exclude unneeded requests from tests, speeding them up significantly
-- avoids conflicts resulting from already aborted / continued requests
+- allows you to alter a request's response with custom content and http status
+- avoids conflicts resulting from already aborted / continued or responded requests
 
 ## Install
 
@@ -14,7 +15,7 @@ npm install puppeteer-request-spy
                                   
 ## Usage
 
-### KeywordMatcher 
+### Spying on requests with a KeywordMatcher 
         
 First create a new `RequestInterceptor` with a `matcher` function and an optional logger. 
 ```js
@@ -42,23 +43,42 @@ After puppeteer's page object finished navigating to any page, you can query the
 await page.goto('https://www.example.com');
 assert.ok(imageSpy.hasMatch() && imageSpy.getMatchCount() > 0);
 ``` 
-### blocking requests    
-Optionally you can add `patterns` to block requests. When blocking requests puppeteer's requestInterception flag must be set to true or puppeteer will throw an exception. For further information check the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagesetrequestinterceptionvalue). Blocked requests will still be counted by a `RequestSpy` with a matching pattern. 
+### Altering Responses
+ 
+Note
+> When blocking or faking responses of requests, puppeteer's requestInterception flag must be set to true or puppeteer will throw an exception. For further information check the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagesetrequestinterceptionvalue). Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception, if the `requestInterception` flag is not set. 
+
+#### Faking Responses
+The response of intercepted requests can also be replaced by adding a ResponseFaker to the RequestInterceptor. The fake response has to match the Response object as specified in the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse).
+  
+```js
+let responseFaker = new ResponseFaker('/ajax/some-request', {
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({successful: false, payload: []})
+});
+
+requestInterceptor.addFaker(mock);
+```
+For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples).
+
+#### Blocking requests    
+Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+
 ```js
 requestInterceptor.block(['scripts', 'track', '.png']);      
 await page.setRequestInterception(true);
-```                    
-Note
-> Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception.
-
-### minimatch
+```    
+### Minimatch
 puppeteer-request-spy works great with [minimatch](https://github.com/isaacs/minimatch), it can be passed as the `matcher` function.
 ```js
 const minimatch = require('minimatch');
 
-let pngSpy = new RequestSpy('**/*.png');    
-
+let pngSpy = new RequestSpy('**/*.png');
+let responseFaker = new ResponseFaker('**/*.jpg', someFakeResponse);
+                                                        
 let requestInterceptor = new RequestInterceptor(minimatch);  
+responseFaker.addFaker(mock);
 requestInterceptor.addSpy(pngSpy);   
 requestInterceptor.block('!https://www.example.com');
 
@@ -69,7 +89,6 @@ await page.goto('https://www.example.com');
 assert.ok(pngSpy.hasMatch() && pngSpy.getMatchCount() > 0);
 ```
 ## API
-
 
 ### class: RequestInterceptor
 The `RequestInterceptor` will match any intercepted request against the `matcher` function and notify all spies with a matching pattern and block requests matching any pattern in `urlsToBlock`.
@@ -93,6 +112,12 @@ Register a spy with the `RequestInterceptor`.
 #### RequestInterceptor.clearSpies()
 Clears all registered spies.
 
+#### RequestInterceptor.addFaker(requestFaker)
+- responseFaker: \<ResponseFaker> faker to register   
+
+#### RequestInterceptor.clearFakers()    
+Clears all registered fakers.
+
 #### RequestInterceptor.block(urlsToBlock)
 - urlsToBlock: \<Array\<string\> | \<string\>\> urls to be blocked if matched
 
@@ -107,7 +132,7 @@ Clears all registered patterns in `urlsToBlock`.
 ### class: RequestSpy
 `RequestSpy` is used to count and verify intercepted requests matching a specific pattern.
 #### RequestSpy constructor(pattern)
-- pattern: \<string|Array<string>>
+- `pattern`: \<string|Array<string>>
 
 `pattern` passed to the `matcher` function of the `RequestInterceptor`.
 
@@ -121,11 +146,26 @@ Clears all registered patterns in `urlsToBlock`.
 - returns: \<number> number of urls that matched the `pattern` 
 
 #### RequestSpy.getPatterns()
-- returns: \<Array\<string\>\> return the pattern list of the spy
+- returns: \<Array\<string\>\> return the `pattern` list of the spy
                                           
 #### RequestSpy.addMatchedUrl(matchedUrl)
 - matchedUrl: \<string> url that was matched   
 
+The `RequestInterceptor` calls this method when an interceptedUrl matches the pattern.
+
+### class: RequestFaker   
+`RequestFaker` is used to provide a fake response when matched to a specific pattern. 
+
+#### RequestSpy constructor(pattern, responseFake)     
+- `pattern`: \<string|Array<string>>
+- `responseFake`: `Response` for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
+
+#### RequestFaker.getPatterns()
+- returns: \<Array\<string\>\> return the `pattern` list of the faker
+
+#### RequestFaker.getResponseFake()
+- returns: \<Response>\ return the fake response
+ 
 The `RequestInterceptor` calls this method when an interceptedUrl matches the pattern.
 
 # Examples

@@ -1,20 +1,13 @@
-export class RequestSpy {
+import {RequestInspector} from './RequestInspector';
+
+export class RequestSpy extends RequestInspector {
 
     private hasMatchingUrl: boolean = false;
     private matchedUrls: Array<string> = [];
     private matchCount: number = 0;
-    private patterns: Array<string> = [];
 
     public constructor(patterns: Array<string> | string) {
-        if (typeof patterns !== 'string' && patterns.constructor !== Array) {
-            throw new Error('invalid pattern, pattern must be of type string or string[].');
-        }
-
-        if (typeof patterns === 'string') {
-            patterns = [patterns];
-        }
-
-        this.patterns = patterns;
+        super(patterns);
     }
 
     public hasMatch(): boolean {
@@ -33,9 +26,5 @@ export class RequestSpy {
         this.hasMatchingUrl = true;
         this.matchedUrls.push(interceptedRequest);
         this.matchCount++;
-    }
-
-    public getPatterns(): Array<string> {
-        return this.patterns;
     }
 }

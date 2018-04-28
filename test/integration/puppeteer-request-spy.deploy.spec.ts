@@ -3,23 +3,24 @@ import * as minimatch from 'minimatch';
 import {Browser, Page} from 'puppeteer';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
+import {ResponseFaker} from '../../src/ResponseFaker';
 import {browserLauncher} from '../common/Browser';
 import {serverSettings} from '../common/ServerSettings';
 import {getLoggerFake} from '../common/testDoubleFactories';
 
-const staticServerIp: string = `http://${serverSettings.host}:${serverSettings.port}`;
-
 describe('puppeteer-request-spy: integration', function (): void {
     // noinspection TsLint
-    this.timeout(30000);
+    this.timeout(60000);
     // noinspection TsLint
     this.slow(20000);
 
     let browser: Browser;
     let page: Page;
     let requestInterceptor: RequestInterceptor;
+    let staticServerIp: string;
 
-    before(async function (): Promise<void> {
+    before(async (): Promise<void> => {
+        staticServerIp = `http://${serverSettings.host}:${serverSettings.port}`;
         browser = await browserLauncher.getBrowser();
         requestInterceptor = new RequestInterceptor(minimatch);
     });
@@ -27,8 +28,9 @@ describe('puppeteer-request-spy: integration', function (): void {
     beforeEach(async () => {
         requestInterceptor.clearSpies();
         requestInterceptor.clearUrlsToBlock();
+        requestInterceptor.clearFakers();
         page = await browser.newPage();
-        page.setViewport(
+        await page.setViewport(
             {
                 width: 920,
                 height: 1000
@@ -40,8 +42,8 @@ describe('puppeteer-request-spy: integration', function (): void {
         await page.close();
     });
 
-    describe('happy path', function (): void {
-        it('requestInterceptor blocks all matched requests', async function (): Promise<void> {
+    describe('happy path', (): void => {
+        it('requestInterceptor blocks all matched requests', async (): Promise<void> => {
             let logs: Array<string> = [];
             let expectedLogs: Array<string> = [
                 `loaded: ${staticServerIp}/index.html`,
@@ -64,7 +66,7 @@ describe('puppeteer-request-spy: integration', function (): void {
             assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
         });
 
-        it('spy tracks all matched requests', async function (): Promise<void> {
+        it('spy tracks all matched requests', async (): Promise<void> => {
             let requestSpy: RequestSpy = new RequestSpy([`!${staticServerIp}/favicon.ico`]);
             let secondRequestSpy: RequestSpy = new RequestSpy(`**/*`);
             let notMatchingRequestSpy: RequestSpy = new RequestSpy(`**/*.min.js`);
@@ -81,34 +83,64 @@ describe('puppeteer-request-spy: integration', function (): void {
             });
 
             assert.ok(secondRequestSpy.hasMatch(), 'spy does not report a match');
-            assert.equal(requestSpy.getMatchCount(), 3, 'spy reports wrong matchCount');
+            assert.equal(requestSpy.getMatchCount(), 4, 'spy reports wrong matchCount');
             assert.equal(notMatchingRequestSpy.getMatchCount(), 0, 'spy reports wrong matchCount');
             assert.deepEqual(
                 requestSpy.getMatchedUrls(),
                 [
                     `${staticServerIp}/index.html`,
                     `${staticServerIp}/style.css`,
-                    `${staticServerIp}/script.js`
+                    `${staticServerIp}/script.js`,
+                    `${staticServerIp}/remote.html`
                 ],
                 'spy does not return matched urls'
             );
         });
+
+        it('faker sends testfake for matched requests', async (): Promise<void> => {
+            let responseFaker: ResponseFaker = new ResponseFaker('**/remote.html', {
+                status: 200,
+                contentType: 'text/plain',
+                body: 'Not Found!'
+            });
+
+            let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch);
+            requestInterceptorWithLoggerFake.addFaker(responseFaker);
+            requestInterceptorWithLoggerFake.setUrlsToBlock([`**/*.css`]);
+            requestInterceptorWithLoggerFake.block(['**/*.ico']);
+
+            await page.setRequestInterception(true);
+            page.on('request', requestInterceptorWithLoggerFake.intercept.bind(requestInterceptorWithLoggerFake));
+
+            await page.goto(`${staticServerIp}/index.html`, {
+                waitUntil: 'networkidle0',
+                timeout: 3000000
+            });
+
+            let innerHtml: string = await page.evaluate(() => {
+                // @ts-ignore: browser-script
+                return document.getElementById('xhr').innerHTML;
+            });
+
+            assert.equal(innerHtml, 'Not Found!');
+        });
     });
 
-    describe('sad path', function (): void {
-        it('spy rejects other input', function (): void {
+    describe('sad path', (): void => {
+        it('RequestSpy rejects other input', (): void => {
             assert.throws(() => {
                 // @ts-ignore: ignore error to test invalid input from js
                 let requestSpy: RequestSpy = new RequestSpy(3);
             });
         });
 
-        it('requestInterceptor blocks all matched requests', async function (): Promise<void> {
+        it('RequestInterceptor blocking request without requestInterception flag', async (): Promise<void> => {
             let logs: Array<string> = [];
             let expectedLogs: Array<string> = [
-                'AssertionError: Request Interception is not enabled!',
-                'AssertionError: Request Interception is not enabled!',
-                'AssertionError: Request Interception is not enabled!'
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!'
             ];
 
             let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch, getLoggerFake(logs));
@@ -124,6 +156,35 @@ describe('puppeteer-request-spy: integration', function (): void {
             });
 
             assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
+        });
+
+        it('RequestFaker faking request without requestInterception flag', async (): Promise<void> => {
+            let logs: Array<string> = [];
+            let expectedLogs: Array<string> = [
+                `loaded: ${staticServerIp}/index.html`,
+                `loaded: ${staticServerIp}/style.css`,
+                `loaded: ${staticServerIp}/script.js`,
+                `loaded: ${staticServerIp}/remote.html`
+            ];
+
+            let responseFaker: ResponseFaker = new ResponseFaker('*remote*', {
+                status: 200,
+                contentType: 'text/plain',
+                body: 'Not Found!'
+            });
+
+            let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch, getLoggerFake(logs));
+            requestInterceptorWithLoggerFake.addFaker(responseFaker);
+
+            await page.setRequestInterception(false);
+            page.on('request', requestInterceptorWithLoggerFake.intercept.bind(requestInterceptorWithLoggerFake));
+
+            await page.goto(`${staticServerIp}/index.html`, {
+                waitUntil: 'networkidle0',
+                timeout: 3000000
+            });
+
+            assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct faked / loaded requests');
         });
     });
 });
