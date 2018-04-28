@@ -6,7 +6,9 @@
     "removeComments": true,
     "preserveConstEnums": false,
     "target": "ES2015",
-    "lib": ["es6", "DOM"],
+    "lib": [
+      "es6"
+    ],
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "noEmitOnError": true,
@@ -24,13 +26,12 @@
     "suppressImplicitAnyIndexErrors": true,
     "outDir": "./build",
     "typeRoots": [
-      "typings/globals",
-      "typings/modules",
-      "typings/custom"
+      "custom-typings",
+      "./node_modules/@types"
     ]
   },
   "include": [
     "./**/*.ts",
-    "./typings/index"
+    "./custom-typings/index"
   ]
 }

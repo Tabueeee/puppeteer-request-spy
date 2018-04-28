@@ -44,7 +44,11 @@
   "author": "Tobias Nießen",
   "license": "MIT",
   "devDependencies": {
+    "@types/minimatch": "^3.0.3",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^10.0.0",
     "@types/puppeteer": "^1.2.3",
+    "@types/sinon": "^4.3.1",
     "minimatch": "^3.0.4",
     "mocha": "^4.0.1",
     "nyc": "^11.3.0",
