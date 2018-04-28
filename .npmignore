@@ -119,6 +119,9 @@ test/**/*.ts
 build/test/**/*.js
 test/**/fakes/
 tsconfig.json
+tsconfig-lint.json
 tslint.json
 typings.json
 build/**/*.js.map
+custom-typings/
+.travis.yml

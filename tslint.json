@@ -191,7 +191,7 @@
         "eofline": true,
         "import-spacing": true,
         "indent": [true, "spaces"],
-        "linebreak-style": true,
+        "linebreak-style": false,
         "newline-before-return": true,
         "no-consecutive-blank-lines": true,
         "no-empty-line-after-opening-brace": false,
