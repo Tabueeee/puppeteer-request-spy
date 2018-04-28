@@ -9,7 +9,7 @@
     "prebuild-dev": "tslint --project tsconfig-lint.json",
     "build-dev": "node_modules/.bin/tsc -p tsconfig.json --sourcemap",
     "pretest": "npm run build",
-    "test": "node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/**/*.spec.js",
+    "test": "node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/**/*.dev.spec.js",
     "test-silent": "node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/**/*.spec.js > test-ts.log",
     "pretest-coverage": "npm run build-dev",
     "test-coverage": "node_modules/.bin/nyc --all --reporter=html npm run test-silent"
