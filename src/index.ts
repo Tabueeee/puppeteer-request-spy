@@ -5,4 +5,4 @@ exports.RequestInterceptor = require('./RequestInterceptor').RequestInterceptor;
 exports.RequestSpy = require('./RequestSpy').RequestSpy;
 
 // noinspection TsLint
-exports.RequestFaker = require('./ResponseFaker').ResponseFaker;
+exports.ResponseFaker = require('./ResponseFaker').ResponseFaker;

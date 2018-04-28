@@ -1,6 +1,7 @@
 # puppeteer-request-spy
 [![Build Status](https://travis-ci.org/Tabueeee/puppeteer-request-spy.svg?branch=master)](https://travis-ci.org/Tabueeee/puppeteer-request-spy)
-> With puppeteer-request-spy you can easily watch or block requests from puppeteer matching patterns. 
+[![Coverage Status](https://coveralls.io/repos/github/Tabueeee/puppeteer-request-spy/badge.svg?branch=master)](https://coveralls.io/github/Tabueeee/puppeteer-request-spy?branch=master)
+> With puppeteer-request-spy you can easily watch, fake or block requests from puppeteer matching patterns. 
 
 - allows you to write tests verifying specific resources getting requested as expected
 - allows you to exclude unneeded requests from tests, speeding them up significantly
@@ -49,7 +50,7 @@ Note
 > When blocking or faking responses of requests, puppeteer's requestInterception flag must be set to true or puppeteer will throw an exception. For further information check the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#pagesetrequestinterceptionvalue). Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception, if the `requestInterception` flag is not set. 
 
 #### Faking Responses
-The response of intercepted requests can also be replaced by adding a ResponseFaker to the RequestInterceptor. The fake response has to match the Response object as specified in the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse).
+The response of intercepted requests can be replaced by adding a ResponseFaker to the RequestInterceptor. The fake response has to match the Response object as specified in the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse).
   
 ```js
 let responseFaker = new ResponseFaker('/ajax/some-request', {

@@ -22,9 +22,9 @@ export class RequestSpy extends RequestInspector {
         return this.matchCount;
     }
 
-    public addMatchedUrl(interceptedRequest: string): void {
+    public addMatchedUrl(matchedUrl: string): void {
         this.hasMatchingUrl = true;
-        this.matchedUrls.push(interceptedRequest);
+        this.matchedUrls.push(matchedUrl);
         this.matchCount++;
     }
 }
