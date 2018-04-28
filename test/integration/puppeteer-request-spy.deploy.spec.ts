@@ -106,9 +106,9 @@ describe('puppeteer-request-spy: integration', function (): void {
         it('requestInterceptor blocks all matched requests', async function (): Promise<void> {
             let logs: Array<string> = [];
             let expectedLogs: Array<string> = [
-                'AssertionError: Request Interception is not enabled!',
-                'AssertionError: Request Interception is not enabled!',
-                'AssertionError: Request Interception is not enabled!'
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
+                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!'
             ];
 
             let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch, getLoggerFake(logs));

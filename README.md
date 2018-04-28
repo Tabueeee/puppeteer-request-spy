@@ -1,4 +1,5 @@
 # puppeteer-request-spy
+[![Build Status](https://travis-ci.org/Tabueeee/puppeteer-request-spy.svg?branch=master)](https://travis-ci.org/Tabueeee/puppeteer-request-spy)
 
 > With puppeteer-request-spy you can easily watch or block requests from puppeteer matching patterns. 
 

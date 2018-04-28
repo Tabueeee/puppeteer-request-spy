@@ -114,11 +114,6 @@ build/Release
 node_modules/
 jspm_packages/
 
-# Typescript v1 declaration files
-typings/globals/
-typings/modules/
-typings/index.d.ts
-
 # Optional npm cache directory
 .npm
 
