@@ -1,6 +1,7 @@
 # puppeteer-request-spy
 [![Build Status](https://travis-ci.org/Tabueeee/puppeteer-request-spy.svg?branch=master)](https://travis-ci.org/Tabueeee/puppeteer-request-spy)
 [![Coverage Status](https://coveralls.io/repos/github/Tabueeee/puppeteer-request-spy/badge.svg?branch=master)](https://coveralls.io/github/Tabueeee/puppeteer-request-spy?branch=master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy?ref=badge_shield)
 > With puppeteer-request-spy you can easily watch, fake or block requests from puppeteer matching patterns. 
 
 - allows you to write tests verifying specific resources getting requested as expected
@@ -179,3 +180,6 @@ There are some simple usage examples included in the [github repository](https:/
 
 # License
 MIT
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy?ref=badge_large)
