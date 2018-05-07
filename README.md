@@ -60,7 +60,7 @@ let responseFaker = new ResponseFaker('/ajax/some-request', {
     body: JSON.stringify({successful: false, payload: []})
 });
 
-requestInterceptor.addFaker(mock);
+requestInterceptor.addFaker(responseFaker);
 ```
 For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples).
 
@@ -134,7 +134,7 @@ Clears all registered patterns in `urlsToBlock`.
 ### class: RequestSpy
 `RequestSpy` is used to count and verify intercepted requests matching a specific pattern.
 #### RequestSpy constructor(pattern)
-- `pattern`: \<string|Array<string>>
+- `pattern`: \<string|Array\<string>>
 
 `pattern` passed to the `matcher` function of the `RequestInterceptor`.
 
@@ -160,7 +160,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 #### RequestSpy constructor(pattern, responseFake)     
 - `pattern`: \<string|Array<string>>
-- `responseFake`: `Response` for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
+- `responseFake`: \<`Response`> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
 
 #### RequestFaker.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the faker

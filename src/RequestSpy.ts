@@ -1,13 +1,24 @@
-import {RequestInspector} from './RequestInspector';
-
-export class RequestSpy extends RequestInspector {
+export class RequestSpy {
 
     private hasMatchingUrl: boolean = false;
     private matchedUrls: Array<string> = [];
     private matchCount: number = 0;
+    private patterns: Array<string> = [];
 
     public constructor(patterns: Array<string> | string) {
-        super(patterns);
+        if (typeof patterns !== 'string' && patterns.constructor !== Array) {
+            throw new Error('invalid pattern, pattern must be of type string or string[].');
+        }
+
+        if (typeof patterns === 'string') {
+            patterns = [patterns];
+        }
+
+        this.patterns = patterns;
+    }
+
+    public getPatterns(): Array<string> {
+        return this.patterns;
     }
 
     public hasMatch(): boolean {
