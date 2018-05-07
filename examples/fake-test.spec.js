@@ -31,7 +31,7 @@ describe('example-block', function () {
 
     before(() => {
         requestInterceptor = new RequestInterceptor(minimatch, console);
-        defaultPicture     = fs.readFileSync('./t2.png');
+        defaultPicture     = fs.readFileSync('./some-picture.png');
         imageResponseFaker = new ResponseFaker('**/*.jpg', {
             status: 200,
             contentType: 'image/png',
@@ -52,7 +52,7 @@ describe('example-block', function () {
 
         jsonResponseFaker = new ResponseFaker('**/*.jpg', {
             status: 200,
-            contentType: 'image/png',
+            contentType: 'application/json',
             body: JSON.stringify({data: []})
         });
 
