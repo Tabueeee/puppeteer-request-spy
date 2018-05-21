@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-request-spy",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "watch, fake or block requests from puppeteer matching patterns",
   "main": "build/src/index.js",
   "scripts": {
