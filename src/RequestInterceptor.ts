@@ -116,6 +116,7 @@ export class RequestInterceptor {
                 this.logger.log((<Error> error).toString());
             }
         } else {
+            await interceptedUrl.continue();
             this.logger.log(`loaded: ${url}`);
         }
     }
