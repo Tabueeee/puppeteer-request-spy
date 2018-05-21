@@ -108,16 +108,11 @@ export class RequestInterceptor {
     }
 
     private async acceptUrl(interceptedUrl: Request, url: string): Promise<void> {
-        if (this.urlsToBlock.length > 0) {
-            try {
-                await interceptedUrl.continue();
-                this.logger.log(`loaded: ${url}`);
-            } catch (error) {
-                this.logger.log((<Error> error).toString());
-            }
-        } else {
+        try {
             await interceptedUrl.continue();
             this.logger.log(`loaded: ${url}`);
+        } catch (error) {
+            this.logger.log((<Error> error).toString());
         }
     }
 }

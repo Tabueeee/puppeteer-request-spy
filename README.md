@@ -12,7 +12,7 @@
 ## Install
 
 ```bash
-npm install puppeteer-request-spy
+npm install puppeteer-request-spy --save-dev
 ```
                                   
 ## Usage
@@ -80,7 +80,7 @@ let pngSpy = new RequestSpy('**/*.png');
 let responseFaker = new ResponseFaker('**/*.jpg', someFakeResponse);
                                                         
 let requestInterceptor = new RequestInterceptor(minimatch);  
-responseFaker.addFaker(mock);
+responseFaker.addFaker(responseFaker);
 requestInterceptor.addSpy(pngSpy);   
 requestInterceptor.block('!https://www.example.com');
 
