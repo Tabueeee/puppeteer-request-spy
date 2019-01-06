@@ -9,7 +9,7 @@ import {TestDouble} from './TestDouble';
 export function getRequestSpyDouble(): TestDouble<RequestSpy> {
     return {
         getPatterns: sinon.stub().returns(['']),
-        addMatchedUrl: sinon.spy(),
+        addMatch: sinon.spy(),
         hasMatch: undefined,
         getMatchedUrls: undefined,
         getMatchCount: undefined
@@ -56,10 +56,11 @@ export function getErrorRequestDouble(): TestDouble<Request> {
     };
 }
 
+const FAVICON_URL: string = `http://${serverSettings.host}/favicon.ico`;
 export function getLoggerFake(arrayPointer: Array<string>): Logger {
     return {
         log: (log: string): void => {
-            if (log !== `http://${serverSettings.host}/favicon.ico`) {
+            if (log !== FAVICON_URL) {
                 arrayPointer.push(log);
             }
         }

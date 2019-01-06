@@ -6,6 +6,7 @@ import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {browserLauncher} from '../common/Browser';
 import {serverSettings} from '../common/ServerSettings';
+import {TestDouble} from '../common/TestDouble';
 import {getLoggerFake} from '../common/testDoubleFactories';
 
 describe('puppeteer-request-spy: integration', function (): void {
@@ -63,13 +64,13 @@ describe('puppeteer-request-spy: integration', function (): void {
                 timeout: 3000000
             });
 
-            assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
+            assert.deepStrictEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
         });
 
         it('spy tracks all matched requests', async (): Promise<void> => {
             let requestSpy: RequestSpy = new RequestSpy([`!${staticServerIp}/favicon.ico`]);
-            let secondRequestSpy: RequestSpy = new RequestSpy(`**/*`);
-            let notMatchingRequestSpy: RequestSpy = new RequestSpy(`**/*.min.js`);
+            let secondRequestSpy: RequestSpy = new RequestSpy('**/*');
+            let notMatchingRequestSpy: RequestSpy = new RequestSpy('**/*.min.js');
 
             requestInterceptor.addSpy(requestSpy);
             requestInterceptor.addSpy(secondRequestSpy);
@@ -83,9 +84,31 @@ describe('puppeteer-request-spy: integration', function (): void {
             });
 
             assert.ok(secondRequestSpy.hasMatch(), 'spy does not report a match');
-            assert.equal(requestSpy.getMatchCount(), 4, 'spy reports wrong matchCount');
-            assert.equal(notMatchingRequestSpy.getMatchCount(), 0, 'spy reports wrong matchCount');
-            assert.deepEqual(
+            assert.strictEqual(requestSpy.getMatchCount(), 4, 'spy reports wrong matchCount');
+            assert.strictEqual(notMatchingRequestSpy.getMatchCount(), 0, 'spy reports wrong matchCount');
+
+            let matches: Array<TestDouble<Request>> = requestSpy.getMatchedRequests();
+
+            let expected: Array<{url: string}> = [
+                {url: `${staticServerIp}/index.html`},
+                {url: `${staticServerIp}/style.css`},
+                {url: `${staticServerIp}/script.js`},
+                {url: `${staticServerIp}/remote.html`}
+            ];
+
+            let actual: Array<{url: string}> = [];
+
+            for (let match of matches) {
+                actual.push({url: match.url()});
+            }
+
+            assert.deepStrictEqual(
+                actual,
+                expected,
+                'requestSpy didn\'t add all urls'
+            );
+
+            assert.deepStrictEqual(
                 requestSpy.getMatchedUrls(),
                 [
                     `${staticServerIp}/index.html`,
@@ -122,7 +145,7 @@ describe('puppeteer-request-spy: integration', function (): void {
                 return document.getElementById('xhr').innerHTML;
             });
 
-            assert.equal(innerHtml, 'Not Found!');
+            assert.strictEqual(innerHtml, 'Not Found!');
         });
     });
 
@@ -130,17 +153,17 @@ describe('puppeteer-request-spy: integration', function (): void {
         it('RequestSpy rejects other input', (): void => {
             assert.throws(() => {
                 // @ts-ignore: ignore error to test invalid input from js
-                let requestSpy: RequestSpy = new RequestSpy(3);
+                new RequestSpy(3);
             });
         });
 
         it('RequestInterceptor blocking request without requestInterception flag', async (): Promise<void> => {
             let logs: Array<string> = [];
             let expectedLogs: Array<string> = [
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!'
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!'
             ];
 
             let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch, getLoggerFake(logs));
@@ -155,16 +178,16 @@ describe('puppeteer-request-spy: integration', function (): void {
                 timeout: 3000000
             });
 
-            assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
+            assert.deepStrictEqual(logs, expectedLogs, 'RequestInterceptor does not log correct blocked / loaded requests');
         });
 
         it('RequestFaker faking request without requestInterception flag', async (): Promise<void> => {
             let logs: Array<string> = [];
             let expectedLogs: Array<string> = [
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!',
-                'AssertionError [ERR_ASSERTION]: Request Interception is not enabled!'
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!',
+                'Error: Request Interception is not enabled!'
             ];
 
             let responseFaker: ResponseFaker = new ResponseFaker('*remote*', {
@@ -184,7 +207,7 @@ describe('puppeteer-request-spy: integration', function (): void {
                 timeout: 3000000
             });
 
-            assert.deepEqual(logs, expectedLogs, 'RequestInterceptor does not log correct faked / loaded requests');
+            assert.deepStrictEqual(logs, expectedLogs, 'RequestInterceptor does not log correct faked / loaded requests');
         });
     });
 });
