@@ -24,7 +24,7 @@ describe('example-block', function () {
     let imagesSpy;
 
     before(() => {
-        imagesSpy           = new RequestSpy('images');
+        imagesSpy           = new RequestSpy('pictures');
         requestInterceptor = new RequestInterceptor(
             (testee, pattern) => testee.indexOf(pattern) > -1,
             console
@@ -36,15 +36,23 @@ describe('example-block', function () {
     describe('example-block', function () {
         it('example-test', async function () {
             let page = await browser.newPage();
+            await page.setRequestInterception(true);
 
             page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
 
+            // waiting for networkidle0 ensures that all request have been loaded before the page.goto promise resolves
             await page.goto('https://www.example.org/', {
                 waitUntil: 'networkidle0',
                 timeout: 3000000
             });
 
+            // verify spy found matches
             assert.ok(imagesSpy.hasMatch() && imagesSpy.getMatchCount() > 0);
+
+            // verify status code for all matching requests
+            for (let match of imagesSpy.getMatchedRequests()) {
+                assert.ok(match.response().ok());
+            }
         });
     });
 });

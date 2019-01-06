@@ -6,9 +6,13 @@ export class BrowserLauncher {
     private browser: Browser | undefined;
 
     public async initialize(options?: LaunchOptions): Promise<void> {
-        this.browser = await puppeteer.launch(options || {
-            headless: true
-        });
+        if (typeof options === 'undefined') {
+            options = {
+                headless: true
+            };
+        }
+
+        this.browser = await puppeteer.launch(options);
     }
 
     public async closeBrowser(): Promise<void> {
@@ -27,4 +31,3 @@ export class BrowserLauncher {
 }
 
 export const browserLauncher: BrowserLauncher = new BrowserLauncher();
-

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import {Request} from 'puppeteer';
 import {RequestSpy} from '../../src/RequestSpy';
 
 describe('class: RequestSpy', (): void => {
@@ -17,34 +18,53 @@ describe('class: RequestSpy', (): void => {
 
         it('returns accepted pattern', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
-            assert.deepEqual(requestSpy.getPatterns(), ['some-pattern/**/*']);
+            assert.deepStrictEqual(requestSpy.getPatterns(), ['some-pattern/**/*']);
         });
 
         it('multiple matched requests increases matchCount', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
 
-            requestSpy.addMatchedUrl('some-pattern/pattern');
-            requestSpy.addMatchedUrl('some-pattern/pattern_2');
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern'});
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern_2'});
 
-            assert.equal(requestSpy.getMatchCount(), 2, '');
+            assert.strictEqual(requestSpy.getMatchCount(), 2, '');
         });
 
         it('multiple matched requests are stored in matchedUrls', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
 
-            requestSpy.addMatchedUrl('some-pattern/pattern');
-            requestSpy.addMatchedUrl('some-pattern/pattern_2');
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern'});
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern_2'});
 
-            assert.deepEqual(requestSpy.getMatchedUrls(), ['some-pattern/pattern', 'some-pattern/pattern_2'], '');
+            let matches: Array<any> = requestSpy.getMatchedRequests();
+
+            let expected = [
+                {url: 'some-pattern/pattern'},
+                {url: 'some-pattern/pattern_2'}
+            ];
+
+            let actual = [];
+
+            for (let match of matches) {
+                actual.push({url: match.url()});
+            }
+
+            assert.deepStrictEqual(
+                actual,
+                expected,
+                'requestSpy didn\'t add all urls'
+            );
+
+            assert.deepStrictEqual(requestSpy.getMatchedUrls(), ['some-pattern/pattern', 'some-pattern/pattern_2'], '');
         });
 
         it('multiple matched requests sets matched to true', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
 
-            requestSpy.addMatchedUrl('some-pattern/pattern');
-            requestSpy.addMatchedUrl('some-pattern/pattern_2');
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern'});
+            requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern_2'});
 
-            assert.equal(requestSpy.hasMatch(), true, '');
+            assert.strictEqual(requestSpy.hasMatch(), true, '');
         });
     });
 

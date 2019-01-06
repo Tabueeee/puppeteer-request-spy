@@ -5,7 +5,7 @@ import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {TestDouble} from '../common/TestDouble';
-import {getErrorRequestDouble, getLowVersionRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
+import {getErrorRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
 
 describe('puppeteer-request-spy: unit', (): void => {
     describe('happy path', (): void => {
@@ -31,7 +31,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(requestSpy.getMatchCount(), 3, 'requestSpy did not increase count on match');
+            assert.strictEqual(requestSpy.getMatchCount(), 3, 'requestSpy did not increase count on match');
         });
 
         it('adds matched urls to matchedUrls array', async (): Promise<void> => {
@@ -42,8 +42,27 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
+            let matches: Array<any> = requestSpy.getMatchedRequests();
 
-            assert.deepEqual(
+            let expected = [
+                {url: 'any-url'},
+                {url: 'any-url'},
+                {url: 'any-url'}
+            ];
+
+            let actual = [];
+
+            for (let match of matches) {
+                actual.push({url: match.url()});
+            }
+
+            assert.deepStrictEqual(
+                actual,
+                expected,
+                'requestSpy didn\'t add all urls'
+            );
+
+            assert.deepStrictEqual(
                 requestSpy.getMatchedUrls(),
                 [
                     'any-url',
@@ -74,7 +93,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(request.abort.callCount, 3, 'requestIntercept blocked to few requests');
+            assert.strictEqual(request.abort.callCount, 3, 'requestIntercept blocked to few requests');
         });
 
         it('fakes request if RequestFaker is added and matched', async (): Promise<void> => {
@@ -89,20 +108,8 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(request.respond.callCount, 3, 'requestIntercept faked to few requests');
+            assert.strictEqual(request.respond.callCount, 3, 'requestIntercept faked to few requests');
         });
-
-        it('supports old Request version', async (): Promise<void> => {
-            let request: TestDouble<Request> = getLowVersionRequestDouble();
-
-            requestInterceptor.block(['']);
-            await requestInterceptor.intercept(<Request> request);
-            await requestInterceptor.intercept(<Request> request);
-            await requestInterceptor.intercept(<Request> request);
-
-            assert.equal(request.abort.callCount, 3, 'requestIntercept blocked to few requests');
-        });
-
     });
 
     describe('sad path', (): void => {
@@ -128,7 +135,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(requestSpy.getMatchCount(), 0, 'requestSpy increased match count');
+            assert.strictEqual(requestSpy.getMatchCount(), 0, 'requestSpy increased match count');
         });
 
         it('does not add mismatched urls to array', async (): Promise<void> => {
@@ -140,7 +147,22 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.deepEqual(
+            let matches: Array<any> = requestSpy.getMatchedRequests();
+
+            let actual = [];
+
+            for (let match of matches) {
+                actual.push({url: match.url()});
+            }
+
+            assert.deepStrictEqual(
+                actual,
+                [],
+                'requestSpy didn\'t add all urls'
+            );
+
+
+            assert.deepStrictEqual(
                 requestSpy.getMatchedUrls(),
                 [],
                 'request spy added mismatched urls'
@@ -156,7 +178,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.deepEqual(requestSpy.hasMatch(), false, 'requestSpy has a match');
+            assert.deepStrictEqual(requestSpy.hasMatch(), false, 'requestSpy has a match');
         });
 
         it('does not block request if urlsToBlock is set and not matched', async (): Promise<void> => {
@@ -167,7 +189,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(request.abort.callCount, 0, 'abort was called');
+            assert.strictEqual(request.abort.callCount, 0, 'abort was called');
         });
 
         it('does not fake request if RequestFaker is added and not matched', async (): Promise<void> => {
@@ -182,7 +204,7 @@ describe('puppeteer-request-spy: unit', (): void => {
             await requestInterceptor.intercept(<Request> request);
             await requestInterceptor.intercept(<Request> request);
 
-            assert.equal(request.abort.callCount, 0, 'requestIntercept faked to few requests');
+            assert.strictEqual(request.abort.callCount, 0, 'requestIntercept faked to few requests');
         });
     });
 

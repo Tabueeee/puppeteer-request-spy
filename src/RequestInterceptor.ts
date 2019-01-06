@@ -1,5 +1,7 @@
 import {Request} from 'puppeteer';
 import {Logger} from './common/Logger';
+import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
+import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {VoidLogger} from './common/VoidLogger';
 import {RequestSpy} from './RequestSpy';
 import {ResponseFaker} from './ResponseFaker';
@@ -11,6 +13,7 @@ export class RequestInterceptor {
     private urlsToBlock: Array<string> = [];
     private matcher: (testString: string, pattern: string) => boolean;
     private logger: Logger;
+    private urlAccessor: UrlAccessor | undefined;
 
     public constructor(matcher: (testString: string, pattern: string) => boolean, logger?: Logger) {
         if (typeof logger === 'undefined') {
@@ -21,53 +24,24 @@ export class RequestInterceptor {
         this.matcher = matcher;
     }
 
-    public async intercept(interceptedUrl: Request): Promise<void> {
-        let url: string;
+    public async intercept(interceptedRequest: Request): Promise<void> {
+        this.matchSpies(interceptedRequest);
 
-        if (typeof interceptedUrl.url === 'string') {
-            // @ts-ignore: support old puppeteer version
-            url = interceptedUrl.url;
-        } else {
-            url = interceptedUrl.url();
-        }
-
-        for (let spy of this.requestSpies) {
-            for (let pattern of spy.getPatterns()) {
-                if (this.matcher(url, pattern)) {
-                    spy.addMatchedUrl(url);
-                }
-            }
-        }
-
-        let aborted: boolean = false;
-        for (let urlToBlock of this.urlsToBlock) {
-            if (this.matcher(url, urlToBlock)) {
-                aborted = true;
-            }
-        }
-
-        if (aborted === true) {
-            await this.blockUrl(interceptedUrl, url);
+        if (this.shouldBlockRequest(interceptedRequest)) {
+            await this.blockUrl(interceptedRequest);
 
             return;
         }
 
-        let responseFaker: undefined | ResponseFaker;
-        for (let requestInspector of this.responseFakers) {
-            for (let pattern of requestInspector.getPatterns()) {
-                if (this.matcher(url, pattern)) {
-                    responseFaker = requestInspector;
-                }
-            }
-        }
+        let responseFaker: undefined | ResponseFaker = this.getMatchingResponseFaker(interceptedRequest);
 
         if (typeof responseFaker !== 'undefined') {
-            await interceptedUrl.respond(responseFaker.getResponseFake());
+            await interceptedRequest.respond(responseFaker.getResponseFake());
 
             return;
         }
 
-        await this.acceptUrl(interceptedUrl, url);
+        await this.acceptUrl(interceptedRequest);
     }
 
     public addSpy(requestSpy: RequestSpy): void {
@@ -98,19 +72,64 @@ export class RequestInterceptor {
         this.urlsToBlock = urlsToBlock;
     }
 
-    private async blockUrl(interceptedUrl: Request, url: string): Promise<void> {
+    private getUrlAccessor(interceptedRequest: Request): UrlAccessor {
+        if (typeof this.urlAccessor === 'undefined') {
+            this.urlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
+        }
+
+        return this.urlAccessor;
+    }
+
+    private getMatchingResponseFaker(interceptedRequest: Request): ResponseFaker | undefined {
+        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
+        for (let requestInspector of this.responseFakers) {
+            for (let pattern of requestInspector.getPatterns()) {
+                if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), pattern)) {
+                    return requestInspector;
+                }
+            }
+        }
+
+        return undefined;
+    }
+
+    private shouldBlockRequest(interceptedRequest: Request): boolean {
+        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
+        for (let urlToBlock of this.urlsToBlock) {
+            if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), urlToBlock)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private matchSpies(interceptedRequest: Request): void {
+        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
+        for (let spy of this.requestSpies) {
+            for (let pattern of spy.getPatterns()) {
+                if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), pattern)) {
+                    spy.addMatch(interceptedRequest);
+                }
+            }
+        }
+    }
+
+    private async blockUrl(interceptedRequest: Request): Promise<void> {
+        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
         try {
-            await interceptedUrl.abort();
-            this.logger.log(`aborted: ${url}`);
+            await interceptedRequest.abort();
+            this.logger.log(`aborted: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
             this.logger.log((<Error> error).toString());
         }
     }
 
-    private async acceptUrl(interceptedUrl: Request, url: string): Promise<void> {
+    private async acceptUrl(interceptedRequest: Request): Promise<void> {
+        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
         try {
-            await interceptedUrl.continue();
-            this.logger.log(`loaded: ${url}`);
+            await interceptedRequest.continue();
+            this.logger.log(`loaded: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
             this.logger.log((<Error> error).toString());
         }

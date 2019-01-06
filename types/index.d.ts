@@ -7,8 +7,9 @@ export declare class RequestInterceptor {
     private urlsToBlock;
     private matcher;
     private logger;
+    private urlAccessor;
     constructor(matcher: (testString: string, pattern: string) => boolean, logger?: Logger);
-    intercept(interceptedUrl: Request): Promise<void>;
+    intercept(interceptedRequest: Request): Promise<void>;
     addSpy(requestSpy: RequestSpy): void;
     addFaker(responseFaker: ResponseFaker): void;
     block(urls: Array<string> | string): void;
@@ -16,21 +17,26 @@ export declare class RequestInterceptor {
     clearFakers(): void;
     clearUrlsToBlock(): void;
     setUrlsToBlock(urlsToBlock: Array<string>): void;
-    private blockUrl(interceptedUrl, url);
-    private acceptUrl(interceptedUrl, url);
+    private getUrlAccessor;
+    private getMatchingResponseFaker;
+    private shouldBlockRequest;
+    private matchSpies;
+    private blockUrl;
+    private acceptUrl;
 }
 
 export declare class RequestSpy {
     private hasMatchingUrl;
-    private matchedUrls;
     private matchCount;
     private patterns;
+    private matches;
     constructor(patterns: Array<string> | string);
     getPatterns(): Array<string>;
+    getMatchedRequests(): Array<Request>;
     hasMatch(): boolean;
+    addMatch(matchedRequest: Request): void;
     getMatchedUrls(): Array<string>;
     getMatchCount(): number;
-    addMatchedUrl(matchedUrl: string): void;
 }
 
 import { RespondOptions } from 'puppeteer';

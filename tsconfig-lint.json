@@ -24,9 +24,6 @@
     "suppressImplicitAnyIndexErrors": true,
     "outDir": "./build",
     "typeRoots": [
-      "typings/globals",
-      "typings/modules",
-      "typings/custom"
     ]
   },
   "exclude": [

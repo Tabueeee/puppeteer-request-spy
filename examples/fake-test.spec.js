@@ -78,7 +78,7 @@ describe('example-block', function () {
                 return document.getElementById('some-id').innerHTML;
             });
 
-            assert.equal(ajaxContent, '<div>some static html</div>');
+            assert.strictEqual(ajaxContent, '<div>some static html</div>');
         });
     });
 });

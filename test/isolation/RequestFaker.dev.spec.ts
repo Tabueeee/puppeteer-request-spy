@@ -23,7 +23,7 @@ describe('class: ResponseFaker', (): void => {
                 body: 'payload'
             });
 
-            assert.deepEqual(responseFaker.getResponseFake(), {
+            assert.deepStrictEqual(responseFaker.getResponseFake(), {
                 status: 200,
                 contentType: 'plain/text',
                 body: 'payload'
