@@ -1,10 +1,10 @@
 import {Request, RespondOptions} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
-import {Faker} from './interface/Faker';
-import {Matcher} from './interface/Matcher';
+import {IResponseFaker} from './interface/IRequestFaker';
+import {RequestMatcher} from './interface/RequestMatcher';
 
-export class ResponseFaker implements Faker {
+export class ResponseFaker implements IResponseFaker {
 
     private responseFake: RespondOptions;
     private patterns: Array<string> = [];
@@ -26,7 +26,7 @@ export class ResponseFaker implements Faker {
         return this.responseFake;
     }
 
-    public isMatch(matcher: Matcher, request: Request): boolean {
+    public isMatchingRequest(request: Request, matcher: RequestMatcher): boolean {
         let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(request);
         for (let pattern of this.patterns) {
             if (matcher(urlAccessor.getUrlFromRequest(request), pattern)) {
@@ -35,5 +35,9 @@ export class ResponseFaker implements Faker {
         }
 
         return false;
+    }
+
+    public getPatterns(): Array<string> {
+        return this.patterns;
     }
 }

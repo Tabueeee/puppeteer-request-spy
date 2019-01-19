@@ -1,14 +1,14 @@
 import {Request} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
-import {Matcher} from './interface/Matcher';
-import {RequestBlocker} from './interface/RequestBlocker';
+import {IRequestBlocker} from './interface/IRequestBlocker';
+import {RequestMatcher} from './interface/RequestMatcher';
 
-export class UrlRequestBlocker implements RequestBlocker {
+export class RequestBlocker implements IRequestBlocker {
 
     private urlsToBlock: Array<string> = [];
 
-    public shouldBlockRequest(matcher: Matcher, request: Request): boolean {
+    public shouldBlockRequest(request: Request, matcher: RequestMatcher): boolean {
         let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(request);
 
         for (let urlToBlock of this.urlsToBlock) {

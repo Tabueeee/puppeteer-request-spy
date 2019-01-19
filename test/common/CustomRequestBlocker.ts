@@ -1,6 +1,6 @@
-import {RequestBlocker} from '../../src/interface/RequestBlocker';
+import {IRequestBlocker} from '../../src/interface/IRequestBlocker';
 
-export class CustomRequestBlocker implements RequestBlocker {
+export class CustomRequestBlocker implements IRequestBlocker {
 
     public shouldBlockRequest(): boolean {
         return true;

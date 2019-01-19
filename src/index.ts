@@ -1,7 +1,7 @@
-import {Faker} from './interface/Faker';
-import {Matcher} from './interface/Matcher';
-import {RequestBlocker} from './interface/RequestBlocker';
-import {Spy} from './interface/Spy';
+import {IRequestBlocker} from './interface/IRequestBlocker';
+import {IResponseFaker} from './interface/IRequestFaker';
+import {IRequestSpy} from './interface/IRequestSpy';
+import {RequestMatcher} from './interface/RequestMatcher';
 import {RequestInterceptor} from './RequestInterceptor';
 import {RequestSpy} from './RequestSpy';
 import {ResponseFaker} from './ResponseFaker';
@@ -10,8 +10,8 @@ export {
     RequestInterceptor,
     RequestSpy,
     ResponseFaker,
-    Faker,
-    Spy,
-    RequestBlocker,
-    Matcher
+    IResponseFaker,
+    IRequestSpy,
+    IRequestBlocker,
+    RequestMatcher
 };

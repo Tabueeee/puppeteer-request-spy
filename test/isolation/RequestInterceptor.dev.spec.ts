@@ -1,13 +1,13 @@
 import * as assert from 'assert';
 import {Request} from 'puppeteer';
 import * as sinon from 'sinon';
-import {Logger} from '../../src/common/Logger';
+import {ILogger} from '../../src/common/Logger';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {TestDouble} from '../common/TestDouble';
 import {getErrorRequestDouble, getRequestDouble, getRequestFakerDouble, getRequestSpyDouble} from '../common/testDoubleFactories';
-import {RequestBlocker} from '../../src/interface/RequestBlocker';
+import {IRequestBlocker} from '../../src/interface/IRequestBlocker';
 import {CustomRequestBlocker} from '../common/CustomRequestBlocker';
 
 describe('class: RequestInterceptor', (): void => {
@@ -22,7 +22,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatch.callCount === 1 && requestSpy.isMatch.called === true);
+            assert.ok(requestSpy.addMatch.callCount === 1 && requestSpy.isMatchingRequest.called === true);
         });
 
         it('does not call RequestSpy when not matched', async (): Promise<void> => {
@@ -35,7 +35,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatch.callCount === 0 && requestSpy.isMatch.called === true);
+            assert.ok(requestSpy.addMatch.callCount === 0 && requestSpy.isMatchingRequest.called === true);
         });
 
         it('calls ResponseFaker to confirm match', async (): Promise<void> => {
@@ -48,7 +48,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 1 && responseFakerTestDouble.isMatch.called === true);
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 1 && responseFakerTestDouble.isMatchingRequest.called === true);
         });
 
         it('does not call ResponseFaker when not matched', async (): Promise<void> => {
@@ -61,7 +61,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.isMatch.called === true);
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.isMatchingRequest.called === true);
         });
 
         it('clears list of RequestSpy', async (): Promise<void> => {
@@ -78,7 +78,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(requestSpy.addMatch.callCount === 0 && requestSpy.isMatch.called === false);
+            assert.ok(requestSpy.addMatch.callCount === 0 && requestSpy.isMatchingRequest.called === false);
         });
 
         it('clears list of RequestFaker', async (): Promise<void> => {
@@ -96,7 +96,7 @@ describe('class: RequestInterceptor', (): void => {
 
             await requestInterceptor.intercept(<Request> request);
 
-            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.isMatch.called === false);
+            assert.ok(responseFakerTestDouble.getResponseFake.callCount === 0 && responseFakerTestDouble.isMatchingRequest.called === false);
         });
 
         it('does not call continue nor respond if abort was called', async (): Promise<void> => {
@@ -136,8 +136,8 @@ describe('class: RequestInterceptor', (): void => {
 
         it('calls logger when debug is set and request is not blocked', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(false);
-            let loggerDouble: TestDouble<Logger> = {log: sinon.spy()};
-            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <Logger> loggerDouble);
+            let loggerDouble: TestDouble<ILogger> = {log: sinon.spy()};
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <ILogger> loggerDouble);
             let request: TestDouble<Request> = getRequestDouble();
             let matchesRequest: boolean = false;
             let requestSpy: TestDouble<RequestSpy> = getRequestSpyDouble(matchesRequest);
@@ -150,8 +150,8 @@ describe('class: RequestInterceptor', (): void => {
 
         it('calls logger when debug is set and request is blocked', async (): Promise<void> => {
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
-            let loggerDouble: TestDouble<Logger> = {log: sinon.spy()};
-            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <Logger> loggerDouble);
+            let loggerDouble: TestDouble<ILogger> = {log: sinon.spy()};
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher, <ILogger> loggerDouble);
             let request: TestDouble<Request> = getRequestDouble();
             requestInterceptor.block(['any-url']);
 
@@ -185,7 +185,7 @@ describe('class: RequestInterceptor', (): void => {
         });
 
         it('accepts new RequestBlocker', async (): Promise<void> => {
-            let requestBlocker: RequestBlocker = {
+            let requestBlocker: IRequestBlocker = {
                 shouldBlockRequest: (): boolean => true,
                 clearUrlsToBlock: (): void => undefined,
                 addUrlsToBlock: (): void => undefined
@@ -202,7 +202,7 @@ describe('class: RequestInterceptor', (): void => {
         });
 
         it('accepts new RequestBlocker', async (): Promise<void> => {
-            let requestBlocker: RequestBlocker = new CustomRequestBlocker();
+            let requestBlocker: IRequestBlocker = new CustomRequestBlocker();
 
             let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
@@ -259,6 +259,30 @@ describe('class: RequestInterceptor', (): void => {
 
             assert.throws(() => {
                 requestInterceptor.setRequestBlocker(requestBlocker);
+            });
+        });
+
+        it('rejects invalid RequestSpy', async (): Promise<void> => {
+            let requestSpy: any = {
+            };
+
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+
+            assert.throws(() => {
+                requestInterceptor.addSpy(requestSpy);
+            });
+        });
+
+        it('rejects invalid ResponseFaker', async (): Promise<void> => {
+            let responseFaker: any = {
+            };
+
+            let matcher: (testString: string, pattern: string) => boolean = sinon.stub().returns(true);
+            let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
+
+            assert.throws(() => {
+                requestInterceptor.addFaker(responseFaker);
             });
         });
     });

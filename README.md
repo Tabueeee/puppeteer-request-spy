@@ -161,8 +161,10 @@ Clears all registered patterns in `urlsToBlock`.
 #### RequestSpy.getMatchCount()
 - returns: \<number> number of urls that matched the `pattern` 
 
-#### RequestSpy.isMatch(matcher: Matcher, request: Request)
-- returns: \<Array\<string\>\> return the `pattern` list of the spy
+#### RequestSpy.isMatchingRequest(matcher: Matcher, request: Request)
+- returns: \<boolean\> returns true if any pattern provided to the RequestSpy matches the request url  
+
+The `RequestInterceptor` calls this method to determine if an interceptedRequest matches the RequestSpy.
                                           
 #### RequestSpy.addMatch(matchedRequest)
 - matchedRequest: \<Request> request that was matched
@@ -183,6 +185,11 @@ The `RequestInterceptor` calls this method when an interceptedRequest matches th
 - returns: \<Response\> return the fake response
  
 The `RequestInterceptor` calls this method when an interceptedUrl matches the pattern.
+     
+#### RequestSpy.isMatchingRequest(matcher: Matcher, request: Request)
+- returns: \<boolean\> returns true if any pattern provided to the RequestFaker matches the request url  
+
+The `RequestInterceptor` calls this method to determine if an interceptedRequest matches the RequestFaker.
 
 # Examples
 

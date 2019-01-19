@@ -1,44 +1,46 @@
 import {Request} from 'puppeteer';
-import {instanceOfRequestBlocker} from './common/InterfaceValidators/instanceOfRequestBlocker';
-import {Logger} from './common/Logger';
+import {instanceOfRequestBlocker} from './common/interfaceValidators/instanceOfRequestBlocker';
+import {instanceOfRequestFaker} from './common/interfaceValidators/instanceOfRequestFaker';
+import {instanceOfRequestSpy} from './common/interfaceValidators/instanceOfRequestSpy';
+import {ILogger} from './common/Logger';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {VoidLogger} from './common/VoidLogger';
-import {Faker} from './interface/Faker';
-import {Matcher} from './interface/Matcher';
-import {RequestBlocker} from './interface/RequestBlocker';
-import {Spy} from './interface/Spy';
-import {UrlRequestBlocker} from './UrlRequestBlocker';
+import {IRequestBlocker} from './interface/IRequestBlocker';
+import {IResponseFaker} from './interface/IRequestFaker';
+import {IRequestSpy} from './interface/IRequestSpy';
+import {RequestMatcher} from './interface/RequestMatcher';
+import {RequestBlocker} from './RequestBlocker';
 
 export class RequestInterceptor {
 
-    private requestSpies: Array<Spy> = [];
-    private responseFakers: Array<Faker> = [];
-    private matcher: Matcher;
-    private logger: Logger;
+    private requestSpies: Array<IRequestSpy> = [];
+    private responseFakers: Array<IResponseFaker> = [];
+    private matcher: RequestMatcher;
+    private logger: ILogger;
     private urlAccessor: UrlAccessor | undefined;
-    private requestBlocker: RequestBlocker;
+    private requestBlocker: IRequestBlocker;
 
-    public constructor(matcher: Matcher, logger?: Logger) {
+    public constructor(matcher: RequestMatcher, logger?: ILogger) {
         if (typeof logger === 'undefined') {
             logger = new VoidLogger();
         }
 
         this.logger = logger;
         this.matcher = matcher;
-        this.requestBlocker = new UrlRequestBlocker();
+        this.requestBlocker = new RequestBlocker();
     }
 
     public async intercept(interceptedRequest: Request): Promise<void> {
         this.matchSpies(interceptedRequest);
 
-        if (this.requestBlocker.shouldBlockRequest(this.matcher, interceptedRequest)) {
+        if (this.requestBlocker.shouldBlockRequest(interceptedRequest, this.matcher)) {
             await this.blockUrl(interceptedRequest);
 
             return;
         }
 
-        let responseFaker: undefined | Faker = this.getMatchingFaker(interceptedRequest);
+        let responseFaker: undefined | IResponseFaker = this.getMatchingFaker(interceptedRequest);
 
         if (typeof responseFaker !== 'undefined') {
             await interceptedRequest.respond(responseFaker.getResponseFake(interceptedRequest));
@@ -49,11 +51,19 @@ export class RequestInterceptor {
         await this.acceptUrl(interceptedRequest);
     }
 
-    public addSpy(requestSpy: Spy): void {
+    public addSpy(requestSpy: IRequestSpy): void {
+        if (!instanceOfRequestSpy(requestSpy)) {
+            throw new Error('invalid RequestSpy provided. Please make sure to match the interface provided.');
+        }
+
         this.requestSpies.push(requestSpy);
     }
 
-    public addFaker(responseFaker: Faker): void {
+    public addFaker(responseFaker: IResponseFaker): void {
+        if (!instanceOfRequestFaker(responseFaker)) {
+            throw new Error('invalid RequestFaker provided. Please make sure to match the interface provided.');
+        }
+
         this.responseFakers.push(responseFaker);
     }
 
@@ -78,12 +88,12 @@ export class RequestInterceptor {
         this.requestBlocker.addUrlsToBlock(urlsToBlock);
     }
 
-    public setRequestBlocker(requestBlocker: RequestBlocker): void {
-        if (instanceOfRequestBlocker(requestBlocker)) {
-            this.requestBlocker = requestBlocker;
-        } else {
-            throw new Error('invalid requestBlocker. make sure to implement the interface correctly.');
+    public setRequestBlocker(requestBlocker: IRequestBlocker): void {
+        if (!instanceOfRequestBlocker(requestBlocker)) {
+            throw new Error('invalid RequestBlocker provided. Please make sure to match the interface provided.');
         }
+
+        this.requestBlocker = requestBlocker;
     }
 
     private getUrlAccessor(interceptedRequest: Request): UrlAccessor {
@@ -94,9 +104,9 @@ export class RequestInterceptor {
         return this.urlAccessor;
     }
 
-    private getMatchingFaker(interceptedRequest: Request): Faker | undefined {
+    private getMatchingFaker(interceptedRequest: Request): IResponseFaker | undefined {
         for (let faker of this.responseFakers) {
-            if (faker.isMatch(this.matcher, interceptedRequest)) {
+            if (faker.isMatchingRequest(interceptedRequest, this.matcher)) {
                 return faker;
             }
         }
@@ -106,7 +116,7 @@ export class RequestInterceptor {
 
     private matchSpies(interceptedRequest: Request): void {
         for (let spy of this.requestSpies) {
-            if (spy.isMatch(this.matcher, interceptedRequest)) {
+            if (spy.isMatchingRequest(interceptedRequest, this.matcher)) {
                 spy.addMatch(interceptedRequest);
             }
         }

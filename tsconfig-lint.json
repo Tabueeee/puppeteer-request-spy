@@ -29,6 +29,7 @@
   "exclude": [
     "./src/**/VoidLogger.ts",
     "./test/**/*.ts",
+    "./examples/**/*",
     "./types/**/*"
   ]
 }

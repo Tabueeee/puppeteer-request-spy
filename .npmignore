@@ -126,3 +126,4 @@ build/**/*.js.map
 custom-typings/
 .travis.yml
 .coveralls.yml
+CONTRIBUTING.md

@@ -18,7 +18,7 @@ describe('class: ResponseFaker', (): void => {
             });
         });
 
-        it('returns accepted patterns', (): void => {
+        it('returns accepted fake', (): void => {
             let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
                 status: 200,
                 contentType: 'plain/text',
@@ -30,6 +30,16 @@ describe('class: ResponseFaker', (): void => {
                 contentType: 'plain/text',
                 body: 'payload'
             });
+        });
+
+        it('returns accepted patterns', (): void => {
+            let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
+                status: 200,
+                contentType: 'plain/text',
+                body: 'payload'
+            });
+
+            assert.deepStrictEqual(responseFaker.getPatterns(), ['some-pattern/**/*']);
         });
     });
 
