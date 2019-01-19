@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as minimatch from 'minimatch';
-import {Browser, Page} from 'puppeteer';
+import {Browser, Page, Request, RespondOptions} from 'puppeteer';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
@@ -146,6 +146,42 @@ describe('puppeteer-request-spy: integration', function (): void {
             });
 
             assert.strictEqual(innerHtml, 'Not Found!');
+        });
+
+        it('faker with dynamic response sends testfake for matched requests', async (): Promise<void> => {
+            let responseFaker: ResponseFaker = new ResponseFaker('**/remote.html', (request: Request): RespondOptions => {
+                if (request.method() === 'GET') {
+                    return {
+                        status: 200,
+                        contentType: 'text/plain',
+                        body: 'Just a mock!'
+                    };
+                }
+
+                return {
+                    status: 404,
+                    contentType: 'text/plain',
+                    body: 'Not Found!'
+                };
+            });
+
+            let requestInterceptorWithLoggerFake: RequestInterceptor = new RequestInterceptor(minimatch);
+            requestInterceptorWithLoggerFake.addFaker(responseFaker);
+
+            await page.setRequestInterception(true);
+            page.on('request', requestInterceptorWithLoggerFake.intercept.bind(requestInterceptorWithLoggerFake));
+
+            await page.goto(`${staticServerIp}/index.html`, {
+                waitUntil: 'networkidle0',
+                timeout: 3000000
+            });
+
+            let innerHtml: string = await page.evaluate(() => {
+                // @ts-ignore: browser-script
+                return document.getElementById('xhr').innerHTML;
+            });
+
+            assert.strictEqual(innerHtml, 'Just a mock!');
         });
     });
 

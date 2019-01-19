@@ -28,5 +28,5 @@ export interface ResponseFaker extends RequestPatternSelector {
     /**
      * Return the fake response
      */
-    getResponseFake(): RespondOptions;
+    getResponseFake(request: Request): RespondOptions;
 }

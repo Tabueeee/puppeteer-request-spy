@@ -174,7 +174,7 @@ The `RequestInterceptor` calls this method when an interceptedRequest matches th
 
 #### RequestFaker constructor(pattern, responseFake)
 - `pattern`: \<string|Array<string>>
-- `responseFake`: \<`Response`> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
+- `responseFake`: \<`Response`|(request: `Request`): `Response`> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
 
 #### RequestFaker.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the faker

@@ -1,12 +1,14 @@
-import {RespondOptions} from 'puppeteer';
+import {Request, RespondOptions} from 'puppeteer';
 import {ResponseFaker as IResponseFaker} from './interfaces';
+
+type RespondOptionsGetter = (request: Request) => RespondOptions;
 
 export class ResponseFaker implements IResponseFaker {
 
-    private responseFake: RespondOptions;
+    private responseFake: RespondOptionsGetter;
     private patterns: Array<string> = [];
 
-    public constructor(patterns: Array<string> | string, responseFake: RespondOptions) {
+    public constructor(patterns: Array<string> | string, responseFake: RespondOptions | RespondOptionsGetter) {
         if (typeof patterns !== 'string' && patterns.constructor !== Array) {
             throw new Error('invalid pattern, pattern must be of type string or string[].');
         }
@@ -16,11 +18,15 @@ export class ResponseFaker implements IResponseFaker {
         }
 
         this.patterns = patterns;
-        this.responseFake = responseFake;
+        if (typeof responseFake === 'function') {
+            this.responseFake = responseFake;
+        } else {
+            this.responseFake = (): RespondOptions => responseFake;
+        }
     }
 
-    public getResponseFake(): RespondOptions {
-        return this.responseFake;
+    public getResponseFake(request: Request): RespondOptions {
+        return this.responseFake(request);
     }
 
     public getPatterns(): Array<string> {

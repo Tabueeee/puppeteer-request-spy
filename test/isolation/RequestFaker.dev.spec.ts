@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {ResponseFaker} from '../../src/ResponseFaker';
+import {mockRequest} from '../common/mockRequest';
 
 describe('class: ResponseFaker', (): void => {
     describe('happy path', (): void => {
@@ -23,7 +24,7 @@ describe('class: ResponseFaker', (): void => {
                 body: 'payload'
             });
 
-            assert.deepStrictEqual(responseFaker.getResponseFake(), {
+            assert.deepStrictEqual(responseFaker.getResponseFake(mockRequest), {
                 status: 200,
                 contentType: 'plain/text',
                 body: 'payload'
