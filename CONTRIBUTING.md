@@ -2,7 +2,7 @@ This Project uses Semantic Versioning. More information can be found [here](http
 
 The branch and tag names also follow the following convention:
 - branches: ```v-x.y.z```
-- tags: ```v.x.y.z```
+- tags: ```vx.y.z```
 
 You only need to follow this convention when creating a Pull Request for a full npm release.
 

@@ -16,6 +16,11 @@ describe('class: RequestSpy', (): void => {
             });
         });
 
+        it('returns accepted pattern', (): void => {
+            let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
+            assert.deepStrictEqual(requestSpy.getPatterns(), ['some-pattern/**/*']);
+        });
+
         it('multiple matched requests increases matchCount', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
 
