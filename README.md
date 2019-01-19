@@ -161,7 +161,7 @@ Clears all registered patterns in `urlsToBlock`.
 #### RequestSpy.getMatchCount()
 - returns: \<number> number of urls that matched the `pattern` 
 
-#### RequestSpy.getPatterns()
+#### RequestSpy.isMatch(matcher: Matcher, request: Request)
 - returns: \<Array\<string\>\> return the `pattern` list of the spy
                                           
 #### RequestSpy.addMatch(matchedRequest)

@@ -1,11 +1,11 @@
-import {getLowVersionRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
-import {Request} from 'puppeteer';
-import {TestDouble} from '../common/TestDouble';
-import {UrlAccessor} from '../../src/common/urlAccessor/UrlAccessor';
 import * as assert from 'assert';
-import {UrlStringAccessor} from '../../src/common/urlAccessor/UrlStringAccessor';
 import * as clearModule from 'clear-module';
+import {Request} from 'puppeteer';
+import {UrlAccessor} from '../../src/common/urlAccessor/UrlAccessor';
 import {UrlFunctionAccessor} from '../../src/common/urlAccessor/UrlFunctionAccessor';
+import {UrlStringAccessor} from '../../src/common/urlAccessor/UrlStringAccessor';
+import {TestDouble} from '../common/TestDouble';
+import {getLowVersionRequestDouble, getRequestDouble} from '../common/testDoubleFactories';
 
 describe('module: UrlAccessorResolver', (): void => {
     beforeEach(() => {

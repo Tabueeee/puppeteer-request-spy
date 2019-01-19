@@ -6,9 +6,9 @@ import {ResponseFaker} from '../../src/ResponseFaker';
 import {serverSettings} from './ServerSettings';
 import {TestDouble} from './TestDouble';
 
-export function getRequestSpyDouble(): TestDouble<RequestSpy> {
+export function getRequestSpyDouble(matches: boolean): TestDouble<RequestSpy> {
     return {
-        getPatterns: sinon.stub().returns(['']),
+        isMatch: sinon.stub().returns(matches),
         addMatch: sinon.spy(),
         hasMatch: undefined,
         getMatchedUrls: undefined,
@@ -34,10 +34,10 @@ export function getLowVersionRequestDouble(): TestDouble<Request> {
     };
 }
 
-export function getRequestFakerDouble(): TestDouble<ResponseFaker> {
+export function getRequestFakerDouble(matches: boolean): TestDouble<ResponseFaker> {
     return {
         getResponseFake: sinon.spy(),
-        getPatterns: sinon.stub().returns([''])
+        isMatch: sinon.stub().returns(matches)
     };
 }
 

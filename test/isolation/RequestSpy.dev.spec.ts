@@ -16,11 +16,6 @@ describe('class: RequestSpy', (): void => {
             });
         });
 
-        it('returns accepted pattern', (): void => {
-            let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
-            assert.deepStrictEqual(requestSpy.getPatterns(), ['some-pattern/**/*']);
-        });
-
         it('multiple matched requests increases matchCount', (): void => {
             let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
 
@@ -36,14 +31,14 @@ describe('class: RequestSpy', (): void => {
             requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern'});
             requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern_2'});
 
-            let matches: Array<any> = requestSpy.getMatchedRequests();
+            let matches: Array<Request> = requestSpy.getMatchedRequests();
 
-            let expected = [
+            let expected: Array<{url: string}> = [
                 {url: 'some-pattern/pattern'},
                 {url: 'some-pattern/pattern_2'}
             ];
 
-            let actual = [];
+            let actual: Array<{url: string}> = [];
 
             for (let match of matches) {
                 actual.push({url: match.url()});

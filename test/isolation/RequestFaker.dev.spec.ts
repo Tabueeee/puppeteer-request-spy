@@ -6,13 +6,15 @@ describe('class: ResponseFaker', (): void => {
 
         it('accepts single string pattern', (): void => {
             assert.doesNotThrow((): void => {
-                new ResponseFaker('some-pattern/**/*', {}).getPatterns();
+                // noinspection TsLint
+                new ResponseFaker('some-pattern/**/*', {});
             });
         });
 
         it('accepts multiple string patterns as array', (): void => {
             assert.doesNotThrow(() => {
-                new ResponseFaker(['some-pattern/**/*', 'some-pattern/**/*', 'some-pattern/**/*'], {}).getPatterns();
+                // noinspection TsLint
+                new ResponseFaker(['some-pattern/**/*', 'some-pattern/**/*', 'some-pattern/**/*'], {});
             });
         });
 

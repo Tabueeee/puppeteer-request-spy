@@ -1,8 +1,17 @@
-// noinspection TsLint
-exports.RequestInterceptor = require('./RequestInterceptor').RequestInterceptor;
+import {Faker} from './interface/Faker';
+import {Matcher} from './interface/Matcher';
+import {RequestBlocker} from './interface/RequestBlocker';
+import {Spy} from './interface/Spy';
+import {RequestInterceptor} from './RequestInterceptor';
+import {RequestSpy} from './RequestSpy';
+import {ResponseFaker} from './ResponseFaker';
 
-// noinspection TsLint
-exports.RequestSpy = require('./RequestSpy').RequestSpy;
-
-// noinspection TsLint
-exports.ResponseFaker = require('./ResponseFaker').ResponseFaker;
+export {
+    RequestInterceptor,
+    RequestSpy,
+    ResponseFaker,
+    Faker,
+    Spy,
+    RequestBlocker,
+    Matcher
+};
