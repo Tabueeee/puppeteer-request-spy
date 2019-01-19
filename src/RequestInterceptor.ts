@@ -3,8 +3,7 @@ import {Logger} from './common/Logger';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {VoidLogger} from './common/VoidLogger';
-import {RequestSpy} from './RequestSpy';
-import {ResponseFaker} from './ResponseFaker';
+import {RequestSpy, ResponseFaker} from './interfaces';
 
 export class RequestInterceptor {
 

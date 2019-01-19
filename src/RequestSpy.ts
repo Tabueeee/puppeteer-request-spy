@@ -1,8 +1,9 @@
 import {Request} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
+import {RequestSpy as IRequestSpy} from './interfaces';
 
-export class RequestSpy {
+export class RequestSpy implements IRequestSpy {
 
     private hasMatchingUrl: boolean = false;
     private matchCount: number = 0;

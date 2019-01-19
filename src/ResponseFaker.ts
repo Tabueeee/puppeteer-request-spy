@@ -1,6 +1,7 @@
 import {RespondOptions} from 'puppeteer';
+import {ResponseFaker as IResponseFaker} from './interfaces';
 
-export class ResponseFaker {
+export class ResponseFaker implements IResponseFaker {
 
     private responseFake: RespondOptions;
     private patterns: Array<string> = [];
