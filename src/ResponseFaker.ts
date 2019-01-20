@@ -1,6 +1,10 @@
-import {RespondOptions} from 'puppeteer';
+import {Request, RespondOptions} from 'puppeteer';
+import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
+import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
+import {IResponseFaker} from './interface/IRequestFaker';
+import {RequestMatcher} from './interface/RequestMatcher';
 
-export class ResponseFaker {
+export class ResponseFaker implements IResponseFaker {
 
     private responseFake: RespondOptions;
     private patterns: Array<string> = [];
@@ -20,6 +24,17 @@ export class ResponseFaker {
 
     public getResponseFake(): RespondOptions {
         return this.responseFake;
+    }
+
+    public isMatchingRequest(request: Request, matcher: RequestMatcher): boolean {
+        let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(request);
+        for (let pattern of this.patterns) {
+            if (matcher(urlAccessor.getUrlFromRequest(request), pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public getPatterns(): Array<string> {

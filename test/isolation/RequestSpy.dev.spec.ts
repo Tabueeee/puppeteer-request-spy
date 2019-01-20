@@ -36,14 +36,14 @@ describe('class: RequestSpy', (): void => {
             requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern'});
             requestSpy.addMatch(<Request> {url: (): string => 'some-pattern/pattern_2'});
 
-            let matches: Array<any> = requestSpy.getMatchedRequests();
+            let matches: Array<Request> = requestSpy.getMatchedRequests();
 
-            let expected = [
+            let expected: Array<{url: string}> = [
                 {url: 'some-pattern/pattern'},
                 {url: 'some-pattern/pattern_2'}
             ];
 
-            let actual = [];
+            let actual: Array<{url: string}> = [];
 
             for (let match of matches) {
                 actual.push({url: match.url()});

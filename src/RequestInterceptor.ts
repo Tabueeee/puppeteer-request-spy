@@ -1,42 +1,49 @@
 import {Request} from 'puppeteer';
-import {Logger} from './common/Logger';
+import {instanceOfRequestBlocker} from './common/interfaceValidators/instanceOfRequestBlocker';
+import {instanceOfRequestFaker} from './common/interfaceValidators/instanceOfRequestFaker';
+import {instanceOfRequestSpy} from './common/interfaceValidators/instanceOfRequestSpy';
+import {ILogger} from './common/Logger';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {VoidLogger} from './common/VoidLogger';
-import {RequestSpy} from './RequestSpy';
-import {ResponseFaker} from './ResponseFaker';
+import {IRequestBlocker} from './interface/IRequestBlocker';
+import {IResponseFaker} from './interface/IRequestFaker';
+import {IRequestSpy} from './interface/IRequestSpy';
+import {RequestMatcher} from './interface/RequestMatcher';
+import {RequestBlocker} from './RequestBlocker';
 
 export class RequestInterceptor {
 
-    private requestSpies: Array<RequestSpy> = [];
-    private responseFakers: Array<ResponseFaker> = [];
-    private urlsToBlock: Array<string> = [];
-    private matcher: (testString: string, pattern: string) => boolean;
-    private logger: Logger;
+    private requestSpies: Array<IRequestSpy> = [];
+    private responseFakers: Array<IResponseFaker> = [];
+    private matcher: RequestMatcher;
+    private logger: ILogger;
     private urlAccessor: UrlAccessor | undefined;
+    private requestBlocker: IRequestBlocker;
 
-    public constructor(matcher: (testString: string, pattern: string) => boolean, logger?: Logger) {
+    public constructor(matcher: RequestMatcher, logger?: ILogger) {
         if (typeof logger === 'undefined') {
             logger = new VoidLogger();
         }
 
         this.logger = logger;
         this.matcher = matcher;
+        this.requestBlocker = new RequestBlocker();
     }
 
     public async intercept(interceptedRequest: Request): Promise<void> {
         this.matchSpies(interceptedRequest);
 
-        if (this.shouldBlockRequest(interceptedRequest)) {
+        if (this.requestBlocker.shouldBlockRequest(interceptedRequest, this.matcher)) {
             await this.blockUrl(interceptedRequest);
 
             return;
         }
 
-        let responseFaker: undefined | ResponseFaker = this.getMatchingResponseFaker(interceptedRequest);
+        let responseFaker: undefined | IResponseFaker = this.getMatchingFaker(interceptedRequest);
 
         if (typeof responseFaker !== 'undefined') {
-            await interceptedRequest.respond(responseFaker.getResponseFake());
+            await interceptedRequest.respond(responseFaker.getResponseFake(interceptedRequest));
 
             return;
         }
@@ -44,16 +51,24 @@ export class RequestInterceptor {
         await this.acceptUrl(interceptedRequest);
     }
 
-    public addSpy(requestSpy: RequestSpy): void {
+    public addSpy(requestSpy: IRequestSpy): void {
+        if (!instanceOfRequestSpy(requestSpy)) {
+            throw new Error('invalid RequestSpy provided. Please make sure to match the interface provided.');
+        }
+
         this.requestSpies.push(requestSpy);
     }
 
-    public addFaker(responseFaker: ResponseFaker): void {
+    public addFaker(responseFaker: IResponseFaker): void {
+        if (!instanceOfRequestFaker(responseFaker)) {
+            throw new Error('invalid RequestFaker provided. Please make sure to match the interface provided.');
+        }
+
         this.responseFakers.push(responseFaker);
     }
 
-    public block(urls: Array<string> | string): void {
-        this.urlsToBlock = this.urlsToBlock.concat(urls);
+    public block(urlsToBlock: Array<string> | string): void {
+        this.requestBlocker.addUrlsToBlock(urlsToBlock);
     }
 
     public clearSpies(): void {
@@ -65,11 +80,20 @@ export class RequestInterceptor {
     }
 
     public clearUrlsToBlock(): void {
-        this.urlsToBlock = [];
+        this.requestBlocker.clearUrlsToBlock();
     }
 
     public setUrlsToBlock(urlsToBlock: Array<string>): void {
-        this.urlsToBlock = urlsToBlock;
+        this.requestBlocker.clearUrlsToBlock();
+        this.requestBlocker.addUrlsToBlock(urlsToBlock);
+    }
+
+    public setRequestBlocker(requestBlocker: IRequestBlocker): void {
+        if (!instanceOfRequestBlocker(requestBlocker)) {
+            throw new Error('invalid RequestBlocker provided. Please make sure to match the interface provided.');
+        }
+
+        this.requestBlocker = requestBlocker;
     }
 
     private getUrlAccessor(interceptedRequest: Request): UrlAccessor {
@@ -80,37 +104,20 @@ export class RequestInterceptor {
         return this.urlAccessor;
     }
 
-    private getMatchingResponseFaker(interceptedRequest: Request): ResponseFaker | undefined {
-        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
-        for (let requestInspector of this.responseFakers) {
-            for (let pattern of requestInspector.getPatterns()) {
-                if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), pattern)) {
-                    return requestInspector;
-                }
+    private getMatchingFaker(interceptedRequest: Request): IResponseFaker | undefined {
+        for (let faker of this.responseFakers) {
+            if (faker.isMatchingRequest(interceptedRequest, this.matcher)) {
+                return faker;
             }
         }
 
         return undefined;
     }
 
-    private shouldBlockRequest(interceptedRequest: Request): boolean {
-        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
-        for (let urlToBlock of this.urlsToBlock) {
-            if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), urlToBlock)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private matchSpies(interceptedRequest: Request): void {
-        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
         for (let spy of this.requestSpies) {
-            for (let pattern of spy.getPatterns()) {
-                if (this.matcher(urlAccessor.getUrlFromRequest(interceptedRequest), pattern)) {
-                    spy.addMatch(interceptedRequest);
-                }
+            if (spy.isMatchingRequest(interceptedRequest, this.matcher)) {
+                spy.addMatch(interceptedRequest);
             }
         }
     }

@@ -1,8 +1,10 @@
 import {Request} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
+import {IRequestSpy} from './interface/IRequestSpy';
+import {RequestMatcher} from './interface/RequestMatcher';
 
-export class RequestSpy {
+export class RequestSpy implements IRequestSpy {
 
     private hasMatchingUrl: boolean = false;
     private matchCount: number = 0;
@@ -37,6 +39,18 @@ export class RequestSpy {
         this.hasMatchingUrl = true;
         this.matchedRequests.push(matchedRequest);
         this.matchCount++;
+    }
+
+    public isMatchingRequest(request: Request, matcher: RequestMatcher): boolean {
+        let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(request);
+
+        for (let pattern of this.patterns) {
+            if (matcher(urlAccessor.getUrlFromRequest(request), pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public getMatchedUrls(): Array<string> {

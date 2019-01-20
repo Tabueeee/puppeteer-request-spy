@@ -117,6 +117,7 @@ examples/
 src/
 build/test/
 test/
+task/
 tsconfig.json
 tsconfig-lint.json
 tslint.json
@@ -125,3 +126,4 @@ build/**/*.js.map
 custom-typings/
 .travis.yml
 .coveralls.yml
+CONTRIBUTING.md

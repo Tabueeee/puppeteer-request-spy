@@ -1,14 +1,14 @@
 import {Request} from 'puppeteer';
 import * as sinon from 'sinon';
-import {Logger} from '../../src/common/Logger';
+import {ILogger} from '../../src/common/Logger';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {serverSettings} from './ServerSettings';
 import {TestDouble} from './TestDouble';
 
-export function getRequestSpyDouble(): TestDouble<RequestSpy> {
+export function getRequestSpyDouble(matches: boolean): TestDouble<RequestSpy> {
     return {
-        getPatterns: sinon.stub().returns(['']),
+        isMatchingRequest: sinon.stub().returns(matches),
         addMatch: sinon.spy(),
         hasMatch: undefined,
         getMatchedUrls: undefined,
@@ -34,10 +34,10 @@ export function getLowVersionRequestDouble(): TestDouble<Request> {
     };
 }
 
-export function getRequestFakerDouble(): TestDouble<ResponseFaker> {
+export function getRequestFakerDouble(matches: boolean): TestDouble<ResponseFaker> {
     return {
         getResponseFake: sinon.spy(),
-        getPatterns: sinon.stub().returns([''])
+        isMatchingRequest: sinon.stub().returns(matches)
     };
 }
 
@@ -57,7 +57,7 @@ export function getErrorRequestDouble(): TestDouble<Request> {
 }
 
 const FAVICON_URL: string = `http://${serverSettings.host}/favicon.ico`;
-export function getLoggerFake(arrayPointer: Array<string>): Logger {
+export function getLoggerFake(arrayPointer: Array<string>): ILogger {
     return {
         log: (log: string): void => {
             if (log !== FAVICON_URL) {
