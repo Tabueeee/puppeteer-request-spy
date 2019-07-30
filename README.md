@@ -88,7 +88,7 @@ let cssSpy = new RequestSpy('**/*.css');
 let responseFaker = new ResponseFaker('**/*.jpg', someFakeResponse);
                                                         
 let requestInterceptor = new RequestInterceptor(minimatch);  
-responseFaker.addFaker(responseFaker);
+requestInterceptor.addFaker(responseFaker);
 requestInterceptor.addSpy(cssSpy);   
 requestInterceptor.block('**/*.js');
 
