@@ -1,5 +1,8 @@
-import {Request} from 'puppeteer';
+import * as nock from 'nock';
+import {Overrides, Request} from 'puppeteer';
 import * as sinon from 'sinon';
+import {SinonSpy} from 'sinon';
+import {HttpRequestFactory, RequestModifier} from '../../src';
 import {ILogger} from '../../src/common/Logger';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
@@ -16,12 +19,40 @@ export function getRequestSpyDouble(matches: boolean): TestDouble<RequestSpy> {
     };
 }
 
-export function getRequestDouble(): TestDouble<Request> {
+export function getRequestModifierDouble(matches: boolean, override: Overrides): TestDouble<RequestModifier> {
+    return {
+        isMatchingRequest: sinon.stub().returns(matches),
+        getOverride: sinon.stub().returns(override)
+    };
+}
+
+export function getRequestDouble(url: string = 'any-url', requestMock?: { nock(): void, requestCount: number }): TestDouble<Request> {
+    if (typeof  requestMock !== 'undefined') {
+        for (let index: number = 0; index < requestMock.requestCount; index++) {
+            requestMock.nock();
+        }
+    }
+
     return {
         continue: sinon.spy(),
         abort: sinon.spy(),
         respond: sinon.spy(),
-        url: (): string => 'any-url'
+        url: (): string => url,
+        method: (): string => 'GET',
+        failure: (): boolean => false
+    };
+}
+
+export function getHttpRequestFactoryDouble(fakeResponse: string, spy?: SinonSpy): TestDouble<HttpRequestFactory> {
+    return {
+        createResponseLoader: (request: Request, url: string): Function => {
+            if (typeof spy !== 'undefined') {
+                spy(request, url);
+            }
+
+            return (): Buffer => new Buffer(fakeResponse);
+        },
+        createOriginalResponseLoaderFromRequest: (): Function => (): Buffer => new Buffer(fakeResponse)
     };
 }
 
@@ -57,6 +88,7 @@ export function getErrorRequestDouble(): TestDouble<Request> {
 }
 
 const FAVICON_URL: string = `http://${serverSettings.host}/favicon.ico`;
+
 export function getLoggerFake(arrayPointer: Array<string>): ILogger {
     return {
         log: (log: string): void => {
@@ -65,4 +97,10 @@ export function getLoggerFake(arrayPointer: Array<string>): ILogger {
             }
         }
     };
+}
+
+export function respondingNock(path: string, bodyPrefix: string): void {
+    nock('http://www.example.com')
+        .get(`/${path}`)
+        .reply(200, `${bodyPrefix} response body`);
 }

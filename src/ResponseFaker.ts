@@ -1,8 +1,8 @@
 import {Request, RespondOptions} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
-import {IResponseFaker} from './interface/IRequestFaker';
-import {RequestMatcher} from './interface/RequestMatcher';
+import {IResponseFaker} from './interface/IResponseFaker';
+import {RequestMatcher} from './types/RequestMatcher';
 
 export class ResponseFaker implements IResponseFaker {
 

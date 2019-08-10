@@ -1,12 +1,14 @@
 import { Request } from 'puppeteer';
 import { ILogger } from './common/Logger';
 import { IRequestBlocker } from './interface/IRequestBlocker';
-import { IResponseFaker } from './interface/IRequestFaker';
+import { IRequestModifier } from './interface/IRequestModifier';
 import { IRequestSpy } from './interface/IRequestSpy';
-import { RequestMatcher } from './interface/RequestMatcher';
+import { IResponseFaker } from './interface/IResponseFaker';
+import { RequestMatcher } from './types/RequestMatcher';
 export declare class RequestInterceptor {
     private requestSpies;
     private responseFakers;
+    private requestModifiers;
     private matcher;
     private logger;
     private urlAccessor;
@@ -15,9 +17,11 @@ export declare class RequestInterceptor {
     intercept(interceptedRequest: Request): Promise<void>;
     addSpy(requestSpy: IRequestSpy): void;
     addFaker(responseFaker: IResponseFaker): void;
+    addRequestModifier(requestModifier: IRequestModifier): void;
     block(urlsToBlock: Array<string> | string): void;
     clearSpies(): void;
     clearFakers(): void;
+    clearRequestModifiers(): void;
     clearUrlsToBlock(): void;
     setUrlsToBlock(urlsToBlock: Array<string>): void;
     setRequestBlocker(requestBlocker: IRequestBlocker): void;

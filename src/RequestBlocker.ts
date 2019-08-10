@@ -2,7 +2,7 @@ import {Request} from 'puppeteer';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {IRequestBlocker} from './interface/IRequestBlocker';
-import {RequestMatcher} from './interface/RequestMatcher';
+import {RequestMatcher} from './types/RequestMatcher';
 
 export class RequestBlocker implements IRequestBlocker {
 

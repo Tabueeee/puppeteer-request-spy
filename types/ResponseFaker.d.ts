@@ -1,6 +1,6 @@
 import { Request, RespondOptions } from 'puppeteer';
-import { IResponseFaker } from './interface/IRequestFaker';
-import { RequestMatcher } from './interface/RequestMatcher';
+import { IResponseFaker } from './interface/IResponseFaker';
+import { RequestMatcher } from './types/RequestMatcher';
 export declare class ResponseFaker implements IResponseFaker {
     private responseFake;
     private patterns;

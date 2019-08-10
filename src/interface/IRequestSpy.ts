@@ -1,5 +1,5 @@
 import {Request} from 'puppeteer';
-import {RequestMatcher} from './RequestMatcher';
+import {RequestMatcher} from '../types/RequestMatcher';
 
 export interface IRequestSpy {
     /**

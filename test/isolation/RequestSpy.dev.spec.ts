@@ -66,6 +66,18 @@ describe('class: RequestSpy', (): void => {
 
             assert.strictEqual(requestSpy.hasMatch(), true, '');
         });
+
+        it('confirms request matches when matcher function matches', (): void => {
+            let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
+
+            assert.deepStrictEqual(requestSpy.isMatchingRequest((<Request>{url: (): string => ''}), () => true), true);
+        });
+
+        it('confirms request does not matches when matcher function does not match', (): void => {
+            let requestSpy: RequestSpy = new RequestSpy('some-pattern/**/*');
+
+            assert.deepStrictEqual(requestSpy.isMatchingRequest((<Request>{url: (): string => ''}), () => false), false);
+        });
     });
 
     describe('sad path', (): void => {

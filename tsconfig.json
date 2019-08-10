@@ -12,7 +12,7 @@
     ],
     "moduleResolution": "node",
     "experimentalDecorators": true,
-    "noEmitOnError": true,
+    "noEmitOnError": false,
     "allowUnreachableCode": false,
     "downlevelIteration": true,
     "locale": "en-us",

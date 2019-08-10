@@ -6,7 +6,7 @@
 
 - allows you to write tests verifying specific resources are loaded as expected
 - allows you to exclude unneeded requests from tests, speeding them up significantly
-- allows you to alter a request's response with custom content and http status
+- allows you to alter requests and responses with custom content and http status
 - avoids conflicts resulting from already aborted / continued or responded requests
 
 ## Install
@@ -14,6 +14,20 @@
 ```bash
 npm install puppeteer-request-spy --save-dev
 ```
+
+## Table of Content
+
+- [spying on requests](#usage)
+- [altering requests](#altering-requests)
+    - [modifying requests](#modifying-requests)
+    - [redirecting requests](#redirecting-requests)
+    - [blocking requests](#blocking-requests)
+- [altering responses](#altering-responses)
+    - [faking responses](#faking-responses)
+    - [modifying responses](#modifying-responses)
+- [advanced usage](#advanced-usage)
+- [full API](#api)
+
                                   
 ## Usage
 
@@ -58,6 +72,15 @@ for (let match of imagesSpy.getMatchedRequests()) {
 Note
 > Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception, if the `requestInterception` flag is not set.
 
+### Altering Requests   
+#### Modifying Requests
+#### Redirecting Requests    
+#### Blocking Requests    
+Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+
+```js
+requestInterceptor.block(['scripts', 'track', '.png']);      
+```    
 ### Altering Responses
 
 #### Faking Responses
@@ -73,12 +96,9 @@ requestInterceptor.addFaker(responseFaker);
 ```
 For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/blob/master/examples/fake-test.spec.js).
 
-#### Blocking requests    
-Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+#### Modifying Responses    
 
-```js
-requestInterceptor.block(['scripts', 'track', '.png']);      
-```    
+### Advanced Usage
 ### Minimatch
 puppeteer-request-spy works great with [minimatch](https://github.com/isaacs/minimatch), it can be passed as the `matcher` function.
 ```js
@@ -218,7 +238,6 @@ Adds new urls to the block list.
 #### RequestBlocker.clearUrlsToBlock()
 
 Removes all entries of the block list.
-
 # Examples
 
 There are some usage examples included in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.
