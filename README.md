@@ -88,7 +88,7 @@ let cssSpy = new RequestSpy('**/*.css');
 let responseFaker = new ResponseFaker('**/*.jpg', someFakeResponse);
                                                         
 let requestInterceptor = new RequestInterceptor(minimatch);  
-responseFaker.addFaker(responseFaker);
+requestInterceptor.addFaker(responseFaker);
 requestInterceptor.addSpy(cssSpy);   
 requestInterceptor.block('**/*.js');
 
@@ -98,7 +98,7 @@ await page.goto('https://www.example.com');
                                                  
 assert.ok(cssSpy.hasMatch() && cssSpy.getMatchCount() > 0);
 for (let matchedRequest of cssSpy.getMatchedRequests()) {
-    assert.ok(match.response().status() === 200);
+    assert.ok(matchedRequest.response().status() === 200);
 }
 ```
 ## API
