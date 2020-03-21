@@ -25,11 +25,11 @@ describe('puppeteer-request-spy: integration', function (): void {
 
     before(async (): Promise<void> => {
         staticServerIp = `http://${serverSettings.host}:${serverSettings.port}`;
-        let serverStarted = serverDouble.start();
-        let browserPromise = browserLauncher.getBrowser();
+        let serverStarted: Promise<{}> = serverDouble.start();
+        let browserPromise: Promise<Browser> = browserLauncher.getBrowser();
 
+        // @ts-ignore
         let [serverLocal, browserLocal] = await Promise.all([serverStarted, browserPromise]);
-        console.log(serverLocal);
         browser = browserLocal;
 
         requestInterceptor = new RequestInterceptor(minimatch);
