@@ -1,6 +1,7 @@
 import * as assert from 'assert';
+import {Request, RespondOptions} from 'puppeteer';
 import {ResponseFaker} from '../../src/ResponseFaker';
-import {Request} from 'puppeteer';
+import {getRequestDouble} from '../common/testDoubleFactories';
 
 describe('class: ResponseFaker', (): void => {
     describe('happy path', (): void => {
@@ -19,16 +20,31 @@ describe('class: ResponseFaker', (): void => {
             });
         });
 
-        it('returns accepted fake', (): void => {
+        it('returns accepted fake', async (): Promise<void> => {
             let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
                 body: 'payload'
             });
 
-            assert.deepStrictEqual(responseFaker.getResponseFake(), {
+            assert.deepStrictEqual(await responseFaker.getResponseFake((<Request> getRequestDouble())), {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
+                body: 'payload'
+            });
+        });
+
+
+        it('returns accepted fake', async (): Promise<void> => {
+            let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', (): RespondOptions => ({
+                status: 200,
+                contentType: 'text/plain',
+                body: 'payload'
+            }));
+
+            assert.deepStrictEqual(await responseFaker.getResponseFake((<Request> getRequestDouble())), {
+                status: 200,
+                contentType: 'text/plain',
                 body: 'payload'
             });
         });
@@ -36,7 +52,7 @@ describe('class: ResponseFaker', (): void => {
         it('returns accepted patterns', (): void => {
             let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
                 body: 'payload'
             });
 
@@ -46,7 +62,7 @@ describe('class: ResponseFaker', (): void => {
         it('confirms request matches when matcher function matches', (): void => {
             let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
                 body: 'payload'
             });
 
@@ -56,7 +72,7 @@ describe('class: ResponseFaker', (): void => {
         it('confirms request does not matches when matcher function does not match', (): void => {
             let responseFaker: ResponseFaker = new ResponseFaker('some-pattern/**/*', {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
                 body: 'payload'
             });
 

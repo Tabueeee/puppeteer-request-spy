@@ -54,26 +54,13 @@ export module unitTestHelpers {
         let responseModifier: ResponseModifier = new ResponseModifier(
             new HttpRequestFactory(),
             'responseModifier',
-            (originalResponse: Buffer): RespondOptions => {
-                return {
-                    status: 200,
-                    contentType: 'text/html',
-                    body: originalResponse.toString().replace(' body', '')
-                };
-            }
+            (originalResponse: string): string => originalResponse.replace(' body', '')
         );
 
         let requestRedirector: RequestRedirector = new RequestRedirector(
-            new HttpRequestFactory(),
             'requestRedirector',
-            (request: Request) => {
-                return {
-                    url: request.url().replace('some-domain', 'example'),
-                    options: {
-                        status: 200,
-                        contentType: 'text/html'
-                    }
-                };
+            (request: Request): string => {
+                return request.url().replace('some-domain', 'example');
             }
         );
 
@@ -92,7 +79,7 @@ export module unitTestHelpers {
         requestInterceptor.addFaker(requestHandlers.responseFaker);
         requestInterceptor.addRequestModifier(requestHandlers.requestModifier);
         requestInterceptor.addFaker(requestHandlers.responseModifier);
-        requestInterceptor.addFaker(requestHandlers.requestRedirector);
+        requestInterceptor.addRequestModifier(requestHandlers.requestRedirector);
     }
 
     export function getUrlsFromRequestArray(requests: Array<Request>): Array<string> {

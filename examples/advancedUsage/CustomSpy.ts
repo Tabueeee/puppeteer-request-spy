@@ -1,4 +1,5 @@
-import {IRequestSpy, RequestMatcher} from 'puppeteer-request-spy';
+// import {IRequestSpy, RequestMatcher} from 'puppeteer-request-spy';
+import {IRequestSpy, RequestMatcher} from '../..';
 import {Request, Response} from 'puppeteer';
 import * as assert from "assert";
 

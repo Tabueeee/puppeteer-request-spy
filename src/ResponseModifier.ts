@@ -1,5 +1,6 @@
 import {Request, RespondOptions} from 'puppeteer';
 import {HttpRequestFactory} from './common/HttpRequestFactory';
+import {resolveOptionalPromise} from './common/resolveOptionalPromise';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {IResponseFaker} from './interface/IResponseFaker';
@@ -41,9 +42,15 @@ export class ResponseModifier implements IResponseFaker {
     }
 
     public async getResponseFake(request: Request): Promise<RespondOptions> {
-        let originalResponse: Buffer = await this.httpRequestFactory.createOriginalResponseLoaderFromRequest(request)();
+        let originalResponse: RespondOptions = await this.httpRequestFactory.createOriginalResponseLoaderFromRequest(request)();
 
-        return this.responseModifierCallBack(originalResponse, request);
+        return Object.assign(
+            {},
+            originalResponse,
+            {
+                body: await resolveOptionalPromise(this.responseModifierCallBack((originalResponse.body || '').toString(), request))
+            }
+        );
     }
 
     public getPatterns(): Array<string> {

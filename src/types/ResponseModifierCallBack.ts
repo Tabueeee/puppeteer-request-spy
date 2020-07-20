@@ -1,3 +1,3 @@
-import {Request, RespondOptions} from 'puppeteer';
+import {Request} from 'puppeteer';
 
-export type ResponseModifierCallBack = (response: Buffer, request: Request) => RespondOptions;
+export type ResponseModifierCallBack = (response: string, request: Request) => string | Promise<string>;

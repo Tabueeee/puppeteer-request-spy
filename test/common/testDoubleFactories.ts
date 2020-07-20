@@ -1,5 +1,5 @@
 import * as nock from 'nock';
-import {Overrides, Request} from 'puppeteer';
+import {Overrides, Request, RespondOptions} from 'puppeteer';
 import * as sinon from 'sinon';
 import {SinonSpy} from 'sinon';
 import {HttpRequestFactory, RequestModifier} from '../../src';
@@ -39,7 +39,9 @@ export function getRequestDouble(url: string = 'any-url', requestMock?: { nock()
         respond: sinon.spy(),
         url: (): string => url,
         method: (): string => 'GET',
-        failure: (): boolean => false
+        failure: (): boolean => false,
+        headers: (): {[index: string]: string} => ({}),
+        postData: (): {[index: string]: string} => ({})
     };
 }
 
@@ -50,9 +52,17 @@ export function getHttpRequestFactoryDouble(fakeResponse: string, spy?: SinonSpy
                 spy(request, url);
             }
 
-            return (): Buffer => new Buffer(fakeResponse);
+            return (): RespondOptions => ({
+                status: 200,
+                body: fakeResponse,
+                contentType: 'text/plain'
+            });
         },
-        createOriginalResponseLoaderFromRequest: (): Function => (): Buffer => new Buffer(fakeResponse)
+        createOriginalResponseLoaderFromRequest: (): Function => (): RespondOptions => ({
+            status: 200,
+            body: fakeResponse,
+            contentType: 'text/plain'
+        })
     };
 }
 
@@ -102,5 +112,5 @@ export function getLoggerFake(arrayPointer: Array<string>): ILogger {
 export function respondingNock(path: string, bodyPrefix: string): void {
     nock('http://www.example.com')
         .get(`/${path}`)
-        .reply(200, `${bodyPrefix} response body`);
+        .reply(200, `${bodyPrefix} response body`, {'content-type': 'text/html'});
 }

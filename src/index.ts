@@ -1,6 +1,5 @@
 /* tslint:disable:variable-name */
 import {HttpRequestFactory} from './common/HttpRequestFactory';
-import {IRedirectionOptions} from './interface/IRedirectionOptions';
 import {IRequestBlocker} from './interface/IRequestBlocker';
 import {IRequestModifier} from './interface/IRequestModifier';
 import {IRequestSpy} from './interface/IRequestSpy';
@@ -12,7 +11,6 @@ import {RequestRedirector} from './RequestRedirector';
 import {RequestSpy} from './RequestSpy';
 import {ResponseFaker} from './ResponseFaker';
 import {ResponseModifier} from './ResponseModifier';
-import {RedirectionOptionFactory} from './types/RedirectionOptionFactory';
 import {RequestMatcher} from './types/RequestMatcher';
 import {ResponseModifierCallBack} from './types/ResponseModifierCallBack';
 
@@ -29,12 +27,10 @@ export {
     ResponseFaker,
     ResponseModifier,
     ResponseModifierBound,
-    IRedirectionOptions,
     IRequestBlocker,
     IRequestModifier,
     IRequestSpy,
     IResponseFaker,
     RequestMatcher,
-    RedirectionOptionFactory,
     ResponseModifierCallBack
 };

@@ -1,0 +1,65 @@
+@startuml
+
+'skinparam monochrome true
+skinparam shadowing false
+
+skinparam activity {
+   DiamondFontSize 16
+   FontSize 16
+   BorderThickness 2
+
+   FontColor black
+   DiamondFontColor black
+   BackgroundColor white
+   DiamondBackgroundColor white
+   BorderColor RoyalBlue
+   DiamondBorderColor Seagreen
+
+   StartColor 343131
+   EndColor 343131
+}
+
+skinparam arrow {
+    color 343131
+    fontColor black
+    FontSize 16
+}
+
+start
+
+
+if (\nRequest matches Pattern \n of any Spies?\n) then (yes)
+  :notify all matching spies;
+else (no)
+
+endif
+
+
+if (\nRequest matches Pattern \n of RequestBlocker?\n) then (no)
+
+
+else (yes)
+  :Block Request \nwith request.abort;
+  stop
+
+endif
+
+
+if (\nRequest matches Pattern \n of any ResponseFakers?\n) then (yes)
+  :get __first__ matching Faker;
+  :respond Fake with\nrequest.respond;
+  stop
+else (no)
+    if (\nRequest matches Pattern \n of any RequestModifiers?\n) then (yes)
+        :get __first__ matching Modifier;
+        :return modified response\nwith request.continue(overrides);
+        stop
+    else
+        :return original response\nwith request.continue();
+        stop
+    endif
+endif
+
+
+
+@enduml

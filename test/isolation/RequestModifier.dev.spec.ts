@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import {Request} from 'puppeteer';
 import {RequestModifier} from '../../src/RequestModifier';
+import {getRequestDouble} from '../common/testDoubleFactories';
 
 describe('class: RequestModifier', (): void => {
     describe('happy path', (): void => {
@@ -19,7 +20,7 @@ describe('class: RequestModifier', (): void => {
             });
         });
 
-        it('returns accepted fake', (): void => {
+        it('returns accepted fake', async (): Promise<void> => {
             let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', {
                 url: '',
                 method: 'GET',
@@ -27,8 +28,25 @@ describe('class: RequestModifier', (): void => {
                 headers: {}
             });
 
-            assert.deepStrictEqual(responseFaker.getOverride(), {
+            assert.deepStrictEqual(await responseFaker.getOverride(<Request> getRequestDouble()), {
                 url: '',
+                method: 'GET',
+                postData: '',
+                headers: {}
+            });
+        });
+
+
+        it('returns accepted fake', async (): Promise<void> => {
+            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', (request: Request) => ({
+                url: request.url(),
+                method: 'GET',
+                postData: '',
+                headers: {}
+            }));
+
+            assert.deepStrictEqual(await responseFaker.getOverride(<Request> getRequestDouble()), {
+                url: 'any-url',
                 method: 'GET',
                 postData: '',
                 headers: {}

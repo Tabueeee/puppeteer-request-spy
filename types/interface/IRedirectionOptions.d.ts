@@ -1,5 +1,4 @@
-import {RespondOptions} from 'puppeteer';
-
+import { RespondOptions } from 'puppeteer';
 export interface IRedirectionOptions {
     url: string;
     options: RespondOptions;

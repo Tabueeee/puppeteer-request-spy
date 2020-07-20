@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {Request, RespondOptions} from 'puppeteer';
+import {Request} from 'puppeteer';
 import {HttpRequestFactory} from '../../src';
 import {ResponseModifier} from '../../src/ResponseModifier';
 import {getHttpRequestFactoryDouble, getRequestDouble} from '../common/testDoubleFactories';
@@ -32,20 +32,14 @@ describe('class: ResponseModifier', (): void => {
             let responseModifier: ResponseModifier = new ResponseModifier(
                 httpRequestFactory,
                 'some-pattern/**/*',
-                (responseBuffer: Buffer): RespondOptions => {
-                    return {
-                        status: 200,
-                        contentType: 'plain/text',
-                        body: `${responseBuffer.toString()}1`
-                    };
-                }
+                (response: string): string => `${response}1`
             );
 
             let request: Request = <Request> getRequestDouble();
 
             assert.deepStrictEqual(await responseModifier.getResponseFake(request), {
                 status: 200,
-                contentType: 'plain/text',
+                contentType: 'text/plain',
                 body: 'payload1'
             });
         });
@@ -55,13 +49,7 @@ describe('class: ResponseModifier', (): void => {
             let responseModifier: ResponseModifier = new ResponseModifier(
                 httpRequestFactory,
                 'some-pattern/**/*',
-                (): RespondOptions => {
-                    return {
-                        status: 200,
-                        contentType: 'plain/text',
-                        body: 'payload'
-                    };
-                }
+                (): string => 'payload'
             );
 
             assert.deepStrictEqual(responseModifier.getPatterns(), ['some-pattern/**/*']);
@@ -72,13 +60,7 @@ describe('class: ResponseModifier', (): void => {
             let responseModifier: ResponseModifier = new ResponseModifier(
                 httpRequestFactory,
                 'some-pattern/**/*',
-                (): RespondOptions => {
-                    return {
-                        status: 200,
-                        contentType: 'plain/text',
-                        body: 'payload'
-                    };
-                }
+                (): string => 'payload'
             );
 
             assert.deepStrictEqual(responseModifier.isMatchingRequest((<Request>{url: (): string => ''}), () => true), true);
@@ -89,13 +71,7 @@ describe('class: ResponseModifier', (): void => {
             let responseModifier: ResponseModifier = new ResponseModifier(
                 httpRequestFactory,
                 'some-pattern/**/*',
-                (): RespondOptions => {
-                    return {
-                        status: 200,
-                        contentType: 'plain/text',
-                        body: 'payload'
-                    };
-                }
+                (): string => 'payload'
             );
 
             assert.deepStrictEqual(responseModifier.isMatchingRequest((<Request>{url: (): string => ''}), () => false), false);

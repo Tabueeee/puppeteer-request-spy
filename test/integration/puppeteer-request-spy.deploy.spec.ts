@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as minimatch from 'minimatch';
-import {Browser, Page, Request, RespondOptions} from 'puppeteer';
+import {Browser, Page, Request} from 'puppeteer';
 import {HttpRequestFactory, IResponseFaker, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
@@ -44,6 +44,7 @@ describe('puppeteer-request-spy: integration', function (): void {
         requestInterceptor.clearSpies();
         requestInterceptor.clearUrlsToBlock();
         requestInterceptor.clearFakers();
+        requestInterceptor.clearRequestModifiers();
         page = await browser.newPage();
         await page.setViewport(
             {
@@ -124,17 +125,10 @@ describe('puppeteer-request-spy: integration', function (): void {
             let modifier: ResponseModifier = new ResponseModifier(
                 new HttpRequestFactory(),
                 '**/remote.html',
-                (response: Buffer): RespondOptions => {
-                    let body: string = response.toString()
-                                               .replace(
-                                                   'some stuff',
-                                                   'some modified stuff'
-                                               );
-
-                    return {
-                        body
-                    };
-                }
+                (response: string): string => response.replace(
+                        'some stuff',
+                        'some modified stuff'
+                    )
             );
             requestInterceptor.addFaker(modifier);
             await page.setRequestInterception(true);
@@ -153,11 +147,14 @@ describe('puppeteer-request-spy: integration', function (): void {
         });
 
         it('RequestRedirector redirects matched requests', async (): Promise<void> => {
-            let redirector: RequestRedirector = new RequestRedirector(new HttpRequestFactory(), '**/remote.html', () => {
-                return {url: `${staticServerIp}/redirected.html`, options: {}};
+            // let redirector: RequestRedirector = new RequestRedirector(new HttpRequestFactory(), '**/remote.html', () => {
+            //     return {url: `${staticServerIp}/redirected.html`, options: {}};
+            // });
+            let redirector: RequestRedirector = new RequestRedirector('**/remote.html', (): string => {
+                return `${staticServerIp}/redirected.html`;
             });
 
-            requestInterceptor.addFaker(redirector);
+            requestInterceptor.addRequestModifier(redirector);
             await page.setRequestInterception(true);
             page.on('request', requestInterceptor.intercept.bind(requestInterceptor));
             await page.goto(`${staticServerIp}/index.html`, {

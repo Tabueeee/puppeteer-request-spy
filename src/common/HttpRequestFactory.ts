@@ -1,6 +1,6 @@
 import Timeout = NodeJS.Timeout;
 import {ClientRequest, IncomingMessage, request as httpRequest, RequestOptions} from 'http';
-import {Request} from 'puppeteer';
+import {Request, RespondOptions} from 'puppeteer';
 import {URL} from 'url';
 import {UrlAccessor} from './urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './urlAccessor/UrlAccessorResolver';
@@ -12,19 +12,19 @@ export class HttpRequestFactory {
         this.timeout = timeout;
     }
 
-    public createOriginalResponseLoaderFromRequest(request: Request): () => Promise<Buffer> {
+    public createOriginalResponseLoaderFromRequest(request: Request): () => Promise<RespondOptions> {
         let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(request);
 
         return this.createResponseLoader(request, urlAccessor.getUrlFromRequest(request));
     }
 
-    public createResponseLoader(request: Request, urlString: string): () => Promise<Buffer> {
-        return (): Promise<Buffer> => {
-            return new Promise((resolve: (body: Buffer) => void, reject: (error: Error) => void): void => {
+    public createResponseLoader(request: Request, urlString: string): () => Promise<RespondOptions> {
+        return (): Promise<RespondOptions> => {
+            return new Promise((resolve: (options: RespondOptions) => void, reject: (error: Error) => void): void => {
                 let url: URL = new URL(urlString);
 
                 let headers: { [index: string]: string } = {};
-                Object.assign(headers, request.headers);
+                Object.assign(headers, request.headers());
 
                 let options: RequestOptions = {
                     method: request.method(),
@@ -51,8 +51,8 @@ export class HttpRequestFactory {
                     res.on('end', () => {
                         let body: Buffer = Buffer.concat(chunks);
                         clearTimeout(timeout);
-                        // {body, res.headers['content-type'];, headers, res.statusCode}
-                        resolve(body);
+
+                        resolve({body: body.toString(), contentType: res.headers['content-type'], status: res.statusCode});
                     });
                 });
 

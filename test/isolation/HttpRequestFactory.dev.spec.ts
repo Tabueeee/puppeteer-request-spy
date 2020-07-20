@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import * as nock from 'nock';
-import {Request} from 'puppeteer';
+import {Request, RespondOptions} from 'puppeteer';
 import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {assertThrowsAsync} from '../common/AssertionHelpers';
 import {getRequestDouble} from '../common/testDoubleFactories';
-
 
 describe('class: HttpRequestFactory', () => {
 
@@ -26,31 +25,42 @@ describe('class: HttpRequestFactory', () => {
             // noinspection TsLint
             nock('http://www.example.com')
                 .get('/resource')
-                .reply(200, 'path matched');
+                .reply(200, 'path matched', {'content-type': 'text/plain'});
 
             let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory();
-            let loader: () => Promise<Buffer> = httpRequestFactory.createResponseLoader(
+            let loader: () => Promise<RespondOptions> = httpRequestFactory.createResponseLoader(
                 <Request>getRequestDouble(),
                 'http://www.example.com/resource'
             );
-            let response: Buffer = await loader();
+            let response: RespondOptions = await loader();
 
-            assert.strictEqual(response.toString(), 'path matched');
+            assert.deepStrictEqual(response, {
+                body: 'path matched',
+                contentType: 'text/plain',
+                status: 200
+            });
         });
 
         it('should create a promise based loader from a request', async () => {
             // noinspection TsLint
             nock('http://www.example.com')
                 .get('/resource')
-                .reply(200, 'path matched');
+                .reply(200, 'path matched', {'content-type': 'text/plain'});
 
             let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory();
-            let loader: () => Promise<Buffer> = httpRequestFactory.createOriginalResponseLoaderFromRequest(
-                <Request>{url: (): string => 'http://www.example.com/resource', method: (): string => 'GET'}
+            let loader: () => Promise<RespondOptions> = httpRequestFactory.createOriginalResponseLoaderFromRequest(
+                <Request>{
+                    url: (): string => 'http://www.example.com/resource', method: (): string => 'GET',
+                    headers: (): { [index: string]: string } => ({})
+                }
             );
-            let response: Buffer = await loader();
+            let response: RespondOptions = await loader();
 
-            assert.strictEqual(response.toString(), 'path matched');
+            assert.deepStrictEqual(response, {
+                body: 'path matched',
+                contentType: 'text/plain',
+                status: 200
+            });
         });
     });
     describe('sad path', () => {
@@ -58,11 +68,11 @@ describe('class: HttpRequestFactory', () => {
             // noinspection TsLint
             nock('http://www.example.com')
                 .get('/resource')
-                .delay(20)
+                .delay(7)
                 .reply(200, 'path matched');
 
-            let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory(15);
-            let loader: () => Promise<Buffer> = httpRequestFactory.createResponseLoader(
+            let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory(5);
+            let loader: () => Promise<RespondOptions> = httpRequestFactory.createResponseLoader(
                 <Request>getRequestDouble(),
                 'http://www.example.com/resource'
             );

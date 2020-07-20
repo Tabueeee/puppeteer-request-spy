@@ -8,6 +8,7 @@ import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {unitTestHelpers} from './unitTestHelpers';
+import {getRequestDouble} from '../common/testDoubleFactories';
 import getRequestDoubles = unitTestHelpers.getRequestDoubles;
 import createRequestHandlers = unitTestHelpers.createRequestHandlers;
 import addRequestHandlers = unitTestHelpers.addRequestHandlers;
@@ -46,7 +47,6 @@ describe('unit', async (): Promise<void> => {
         }
         nock.disableNetConnect();
     });
-
 
     after(() => {
         nock.cleanAll();
@@ -147,7 +147,7 @@ describe('unit', async (): Promise<void> => {
         });
 
         it('should return provided fake', async (): Promise<void> => {
-            assert.deepStrictEqual(responseFaker.getResponseFake(), responseFake);
+            assert.deepStrictEqual(await responseFaker.getResponseFake(<Request>getRequestDouble()), responseFake);
         });
 
         it('should return passed pattern as Array', async (): Promise<void> => {
@@ -189,13 +189,7 @@ describe('unit', async (): Promise<void> => {
             let responseModifierWithArray: ResponseModifier = new ResponseModifier(
                 new HttpRequestFactory(),
                 ['some/pattern/**/*'],
-                (originalResponse: Buffer): RespondOptions => {
-                    return {
-                        status: 200,
-                        contentType: 'text/html',
-                        body: originalResponse.toString().replace(' body', '')
-                    };
-                }
+                (originalResponse: string): string => originalResponse.replace(' body', '')
             );
             assert.deepStrictEqual(responseModifierWithArray.getPatterns(), ['some/pattern/**/*']);
         });
@@ -211,15 +205,31 @@ describe('unit', async (): Promise<void> => {
 
     describe('class: RequestRedirector', async (): Promise<void> => {
         it('should have redirected three requests', async (): Promise<void> => {
-            sinon.assert.callCount(<SinonSpy>requestMatchingRequestRedirector.respond, 3);
+            sinon.assert.callCount(<SinonSpy>requestMatchingRequestRedirector.continue, 3);
+
+            // todo improve
+            sinon.assert.alwaysCalledWith(
+                <SinonSpy>requestMatchingRequestRedirector.continue,
+                {
+                    headers: {},
+                    method: 'GET',
+                    postData: {},
+                    url: 'http://www.example.com/requestRedirector'
+                }
+            );
         });
 
         it('should respond with redirected fake', async (): Promise<void> => {
-            sinon.assert.calledWithExactly(<SinonSpy>requestMatchingRequestRedirector.respond, {
-                status: 200,
-                contentType: 'text/html',
-                body: 'redirected response body'
-            });
+            // todo improve
+            sinon.assert.alwaysCalledWith(
+                <SinonSpy>requestMatchingRequestRedirector.continue,
+                {
+                    headers: {},
+                    method: 'GET',
+                    postData: {},
+                    url: 'http://www.example.com/requestRedirector'
+                }
+            );
         });
 
         it('should return passed pattern as Array', async (): Promise<void> => {
@@ -228,9 +238,8 @@ describe('unit', async (): Promise<void> => {
 
         it('should return passed patterns as Array', async (): Promise<void> => {
             let requestRedirectorWithArray: RequestRedirector = new RequestRedirector(
-                new HttpRequestFactory(),
                 ['some/pattern/**/*'],
-                sinon.stub().returns({})
+                sinon.stub().returns('some-url')
             );
 
             assert.deepStrictEqual(requestRedirectorWithArray.getPatterns(), ['some/pattern/**/*']);
@@ -265,8 +274,8 @@ describe('unit', async (): Promise<void> => {
             assert.deepStrictEqual(requestModifierWithArray.getPatterns(), ['some/pattern/**/*']);
         });
 
-        it('should return provided override', () => {
-            assert.deepStrictEqual(requestModifier.getOverride(), overrides);
+        it('should return provided override', async () => {
+            assert.deepStrictEqual(await requestModifier.getOverride(<Request>getRequestDouble()), overrides);
         });
 
         it('should throw an Error on invalid patterns', () => {
