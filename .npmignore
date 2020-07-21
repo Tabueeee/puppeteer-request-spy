@@ -127,3 +127,5 @@ custom-typings/
 .travis.yml
 .coveralls.yml
 CONTRIBUTING.md
+notes.md
+documentation/
