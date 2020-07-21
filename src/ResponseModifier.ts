@@ -13,9 +13,9 @@ export class ResponseModifier implements IResponseFaker {
     private httpRequestFactory: HttpRequestFactory;
 
     public constructor(
-        httpRequestFactory: HttpRequestFactory,
         patterns: Array<string> | string,
-        responseModifierCallBack: ResponseModifierCallBack
+        responseModifierCallBack: ResponseModifierCallBack,
+        httpRequestFactory: HttpRequestFactory = (new HttpRequestFactory())
     ) {
         if (typeof patterns !== 'string' && patterns.constructor !== Array) {
             throw new Error('invalid pattern, pattern must be of type string or string[].');
@@ -48,7 +48,10 @@ export class ResponseModifier implements IResponseFaker {
             {},
             originalResponse,
             {
-                body: await resolveOptionalPromise(this.responseModifierCallBack((originalResponse.body || '').toString(), request))
+                body: await resolveOptionalPromise(this.responseModifierCallBack(
+                    (typeof originalResponse.body === 'string' ? originalResponse.body : '').toString(),
+                    request
+                ))
             }
         );
     }

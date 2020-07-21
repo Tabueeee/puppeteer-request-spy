@@ -1,5 +1,6 @@
 import {Overrides, Request, RespondOptions} from 'puppeteer';
-import {HttpRequestFactory, RequestInterceptor, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {RequestInterceptor, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {
@@ -52,9 +53,9 @@ export module unitTestHelpers {
         let responseFaker: ResponseFaker = new ResponseFaker('faker', responseFake);
         let requestModifier: RequestModifier = new RequestModifier('modifier', overrides);
         let responseModifier: ResponseModifier = new ResponseModifier(
-            new HttpRequestFactory(),
             'responseModifier',
-            (originalResponse: string): string => originalResponse.replace(' body', '')
+            (originalResponse: string): string => originalResponse.replace(' body', ''),
+            new HttpRequestFactory()
         );
 
         let requestRedirector: RequestRedirector = new RequestRedirector(
@@ -80,15 +81,6 @@ export module unitTestHelpers {
         requestInterceptor.addRequestModifier(requestHandlers.requestModifier);
         requestInterceptor.addFaker(requestHandlers.responseModifier);
         requestInterceptor.addRequestModifier(requestHandlers.requestRedirector);
-    }
-
-    export function getUrlsFromRequestArray(requests: Array<Request>): Array<string> {
-        let arr: Array<string> = [];
-        for (let request of requests) {
-            arr.push(request.url());
-        }
-
-        return arr;
     }
 
     export async function simulateUsage(requestInterceptor: RequestInterceptor, requestDoubles: Array<Request>): Promise<void> {

@@ -1,13 +1,13 @@
 import * as assert from 'assert';
 import * as minimatch from 'minimatch';
 import {Browser, Page, Request} from 'puppeteer';
-import {HttpRequestFactory, IResponseFaker, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {IResponseFaker, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
 import {browserLauncher} from '../common/Browser';
 import {CustomFaker} from '../common/CustomFaker';
-import {getUrlsFromRequestArray} from '../common/helpers';
 import {serverDouble} from '../common/ServerDouble';
 import {serverSettings} from '../common/ServerSettings';
 import {getLoggerFake} from '../common/testDoubleFactories';
@@ -109,7 +109,8 @@ describe('puppeteer-request-spy: integration', function (): void {
             ];
 
             assert.deepStrictEqual(
-                getUrlsFromRequestArray((<Array<Request>>requestSpy.getMatchedRequests())),
+                // getUrlsFromRequestArray((<Array<Request>>requestSpy.getMatchedRequests())),
+                requestSpy.getMatchedRequests().map((request: Request) => request.url()),
                 expected,
                 'requestSpy didn\'t add all urls'
             );
@@ -123,12 +124,12 @@ describe('puppeteer-request-spy: integration', function (): void {
 
         it('ResponseModifier modifies responses of matched requests', async (): Promise<void> => {
             let modifier: ResponseModifier = new ResponseModifier(
-                new HttpRequestFactory(),
                 '**/remote.html',
                 (response: string): string => response.replace(
                         'some stuff',
                         'some modified stuff'
-                    )
+                    ),
+                new HttpRequestFactory()
             );
             requestInterceptor.addFaker(modifier);
             await page.setRequestInterception(true);
@@ -147,9 +148,6 @@ describe('puppeteer-request-spy: integration', function (): void {
         });
 
         it('RequestRedirector redirects matched requests', async (): Promise<void> => {
-            // let redirector: RequestRedirector = new RequestRedirector(new HttpRequestFactory(), '**/remote.html', () => {
-            //     return {url: `${staticServerIp}/redirected.html`, options: {}};
-            // });
             let redirector: RequestRedirector = new RequestRedirector('**/remote.html', (): string => {
                 return `${staticServerIp}/redirected.html`;
             });

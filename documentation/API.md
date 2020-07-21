@@ -1,4 +1,3 @@
-
 # API
 
 ## class: RequestInterceptor
@@ -52,6 +51,7 @@ Clears all registered patterns in `urlsToBlock`.
 
 Allows you to replace the default RequestBlocker by your own implementation.
 
+
 ## class: RequestSpy implements IRequestSpy
 `RequestSpy` is used to count and verify intercepted requests matching a specific pattern.
 
@@ -84,6 +84,7 @@ The `RequestInterceptor` calls this method to determine if an interceptedRequest
 
 The `RequestInterceptor` calls this method when an interceptedRequest matches the pattern.
 
+
 ## class: ResponseFaker implements IResponseFaker
 `ResponseFaker` is used to provide a fake response when matched to a specific pattern. 
 
@@ -105,6 +106,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 - returns: \<boolean\> returns true if any pattern provided to the ResponseFaker matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
+
 
 ## class: ResponseModifier implements IResponseFaker
 `ResponseModifier` is used to load the original response and modify it on the fly as a fake response when matched to a specific pattern. 
@@ -129,6 +131,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+
 ## class: RequestModifier implements IRequestModifier
 `RequestModifier` is used to change the matched request to a different request. 
 
@@ -152,6 +155,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+
 ## class: RequestRedirector implements IRequestModifier
 `RequestRedirector` is used to change the matched request to a different url. 
 
@@ -174,6 +178,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 - returns: \<boolean\> returns true if any pattern provided to the RequestRedirector matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
+
 
 ## class: RequestBlocker implements IResponseBlocker 
 `RequestBlocker` is used to by the RequestInterceptor to match requests to block. 

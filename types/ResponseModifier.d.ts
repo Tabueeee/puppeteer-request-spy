@@ -7,7 +7,7 @@ export declare class ResponseModifier implements IResponseFaker {
     private patterns;
     private responseModifierCallBack;
     private httpRequestFactory;
-    constructor(httpRequestFactory: HttpRequestFactory, patterns: Array<string> | string, responseModifierCallBack: ResponseModifierCallBack);
+    constructor(patterns: Array<string> | string, responseModifierCallBack: ResponseModifierCallBack, httpRequestFactory?: HttpRequestFactory);
     isMatchingRequest(request: Request, matcher: RequestMatcher): boolean;
     getResponseFake(request: Request): Promise<RespondOptions>;
     getPatterns(): Array<string>;

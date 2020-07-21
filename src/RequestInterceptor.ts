@@ -152,7 +152,7 @@ export class RequestInterceptor {
             await interceptedRequest.abort();
             this.logger.log(`aborted: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
-            this.logger.log((<Error>error).toString());
+            this.logger.log((<Error> error).toString());
         }
     }
 
@@ -168,7 +168,7 @@ export class RequestInterceptor {
                 this.logger.log(`loaded: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
             }
         } catch (error) {
-            this.logger.log((<Error>error).toString());
+            this.logger.log((<Error> error).toString());
         }
     }
 }

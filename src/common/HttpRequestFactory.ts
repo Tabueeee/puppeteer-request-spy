@@ -36,7 +36,7 @@ export class HttpRequestFactory {
 
                 let timeout: Timeout = setTimeout(
                     () => {
-                        reject(new Error('request timed out after 30 seconds.'));
+                        reject(new Error(`request timed out after ${this.timeout / 1000} seconds.`));
                     },
                     this.timeout
                 );

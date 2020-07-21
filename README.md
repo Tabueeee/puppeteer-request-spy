@@ -164,8 +164,33 @@ The ResponseModifier uses the IResponseFaker interface.
 
 ## Advanced Usage
 
-As long as you follow the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/src/interfac) provided in the github repository you can create your own Spies, Fakers or Modifiers.
-For further details check the examples.
+As long as you follow the interfaces provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/src/interface) you can create your own Spies, Fakers or Modifiers.
+
+
+````js 
+const prs = require('..');
+
+let interceptor = new prs.RequestInterceptor(
+    (testee, pattern) => testee.indexOf(pattern) > -1
+);
+
+let count = 0;
+interceptor.addSpy({
+    isMatchingRequest: (_request, _matcher) => true,
+    addMatch: (_request) => count++
+});
+
+interceptor.addFaker({
+    isMatchingRequest: (_request, _matcher) => true,
+    getResponseFake: (request) => ({body: ''})
+});
+
+interceptor.addRequestModifier({
+    isMatchingRequest: (_request, _matcher) => true,
+    getOverride: (interceptedRequest) => ({url: ''})
+});
+
+````
 
 ### Minimatch
 puppeteer-request-spy works great with [minimatch](https://github.com/isaacs/minimatch), it can be passed as the `matcher` function.

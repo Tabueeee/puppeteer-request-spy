@@ -286,7 +286,7 @@ describe('class: RequestInterceptor', (): void => {
             requestInterceptor.setRequestBlocker(requestBlocker);
             let request: TestDouble<Request> = getRequestDouble();
 
-            await requestInterceptor.intercept(<Request>request);
+            await requestInterceptor.intercept(<Request> request);
 
             assert.ok(request.continue.callCount === 0 && request.respond.callCount === 0 && request.abort.callCount === 1);
         });
@@ -317,7 +317,7 @@ describe('class: RequestInterceptor', (): void => {
             requestInterceptor.setUrlsToBlock(['any-url']);
 
             try {
-                await requestInterceptor.intercept(<Request>request);
+                await requestInterceptor.intercept(<Request> request);
             } catch (caughtError) {
                 error = caughtError;
             }

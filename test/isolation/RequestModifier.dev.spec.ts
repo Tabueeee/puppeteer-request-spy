@@ -21,14 +21,14 @@ describe('class: RequestModifier', (): void => {
         });
 
         it('returns accepted fake', async (): Promise<void> => {
-            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', {
+            let requestModifier: RequestModifier = new RequestModifier('some-pattern/**/*', {
                 url: '',
                 method: 'GET',
                 postData: '',
                 headers: {}
             });
 
-            assert.deepStrictEqual(await responseFaker.getOverride(<Request> getRequestDouble()), {
+            assert.deepStrictEqual(await requestModifier.getOverride(<Request> getRequestDouble()), {
                 url: '',
                 method: 'GET',
                 postData: '',
@@ -38,14 +38,14 @@ describe('class: RequestModifier', (): void => {
 
 
         it('returns accepted fake', async (): Promise<void> => {
-            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', (request: Request) => ({
+            let requestModifier: RequestModifier = new RequestModifier('some-pattern/**/*', (request: Request) => ({
                 url: request.url(),
                 method: 'GET',
                 postData: '',
                 headers: {}
             }));
 
-            assert.deepStrictEqual(await responseFaker.getOverride(<Request> getRequestDouble()), {
+            assert.deepStrictEqual(await requestModifier.getOverride(<Request> getRequestDouble()), {
                 url: 'any-url',
                 method: 'GET',
                 postData: '',
@@ -54,36 +54,36 @@ describe('class: RequestModifier', (): void => {
         });
 
         it('returns accepted patterns', (): void => {
-            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', {
+            let requestModifier: RequestModifier = new RequestModifier('some-pattern/**/*', {
                 url: '',
                 method: 'GET',
                 postData: '',
                 headers: {}
             });
 
-            assert.deepStrictEqual(responseFaker.getPatterns(), ['some-pattern/**/*']);
+            assert.deepStrictEqual(requestModifier.getPatterns(), ['some-pattern/**/*']);
         });
 
         it('confirms request matches when matcher function matches', (): void => {
-            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', {
+            let requestModifier: RequestModifier = new RequestModifier('some-pattern/**/*', {
                 url: '',
                 method: 'GET',
                 postData: '',
                 headers: {}
             });
 
-            assert.deepStrictEqual(responseFaker.isMatchingRequest((<Request>{url: (): string => ''}), () => true), true);
+            assert.deepStrictEqual(requestModifier.isMatchingRequest((<Request>{url: (): string => ''}), () => true), true);
         });
 
         it('confirms request does not matches when matcher function does not match', (): void => {
-            let responseFaker: RequestModifier = new RequestModifier('some-pattern/**/*', {
+            let requestModifier: RequestModifier = new RequestModifier('some-pattern/**/*', {
                 url: '',
                 method: 'GET',
                 postData: '',
                 headers: {}
             });
 
-            assert.deepStrictEqual(responseFaker.isMatchingRequest((<Request>{url: (): string => ''}), () => false), false);
+            assert.deepStrictEqual(requestModifier.isMatchingRequest((<Request>{url: (): string => ''}), () => false), false);
         });
     });
 

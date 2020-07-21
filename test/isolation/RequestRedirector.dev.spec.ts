@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {Request} from 'puppeteer';
-import {HttpRequestFactory} from '../../src';
+import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {RequestRedirector} from '../../src/RequestRedirector';
 import {getHttpRequestFactoryDouble, getRequestDouble} from '../common/testDoubleFactories';
 

@@ -11,7 +11,6 @@ export declare class RequestInterceptor {
     private requestModifiers;
     private matcher;
     private logger;
-    private urlAccessor;
     private requestBlocker;
     constructor(matcher: RequestMatcher, logger?: ILogger);
     intercept(interceptedRequest: Request): Promise<void>;
@@ -25,9 +24,9 @@ export declare class RequestInterceptor {
     clearUrlsToBlock(): void;
     setUrlsToBlock(urlsToBlock: Array<string>): void;
     setRequestBlocker(requestBlocker: IRequestBlocker): void;
-    private getUrlAccessor;
     private getMatchingFaker;
     private matchSpies;
+    private getMatchingOverride;
     private blockUrl;
     private acceptUrl;
 }

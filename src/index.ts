@@ -1,10 +1,7 @@
-/* tslint:disable:variable-name */
-import {HttpRequestFactory} from './common/HttpRequestFactory';
 import {IRequestBlocker} from './interface/IRequestBlocker';
 import {IRequestModifier} from './interface/IRequestModifier';
 import {IRequestSpy} from './interface/IRequestSpy';
 import {IResponseFaker} from './interface/IResponseFaker';
-import {RequestBlocker} from './RequestBlocker';
 import {RequestInterceptor} from './RequestInterceptor';
 import {RequestModifier} from './RequestModifier';
 import {RequestRedirector} from './RequestRedirector';
@@ -14,19 +11,13 @@ import {ResponseModifier} from './ResponseModifier';
 import {RequestMatcher} from './types/RequestMatcher';
 import {ResponseModifierCallBack} from './types/ResponseModifierCallBack';
 
-let ResponseModifierBound: new(patterns: Array<string> | string, responseModifierCallBack: ResponseModifierCallBack) => ResponseModifier =
-    ResponseModifier.bind(null, new HttpRequestFactory());
-
 export {
-    HttpRequestFactory,
-    RequestBlocker,
     RequestInterceptor,
     RequestModifier,
     RequestRedirector,
     RequestSpy,
     ResponseFaker,
     ResponseModifier,
-    ResponseModifierBound,
     IRequestBlocker,
     IRequestModifier,
     IRequestSpy,

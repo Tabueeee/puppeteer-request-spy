@@ -3,18 +3,18 @@ import * as nock from 'nock';
 import {Overrides, Request, RespondOptions} from 'puppeteer';
 import * as sinon from 'sinon';
 import {SinonSpy} from 'sinon';
-import {HttpRequestFactory, RequestMatcher, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {RequestMatcher, RequestModifier, RequestRedirector, ResponseModifier} from '../../src';
+import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {RequestInterceptor} from '../../src/RequestInterceptor';
 import {RequestSpy} from '../../src/RequestSpy';
 import {ResponseFaker} from '../../src/ResponseFaker';
-import {unitTestHelpers} from './unitTestHelpers';
 import {getRequestDouble} from '../common/testDoubleFactories';
+import {unitTestHelpers} from './unitTestHelpers';
 import getRequestDoubles = unitTestHelpers.getRequestDoubles;
 import createRequestHandlers = unitTestHelpers.createRequestHandlers;
 import addRequestHandlers = unitTestHelpers.addRequestHandlers;
 import RequestHandlers = unitTestHelpers.RequestHandlers;
 import simulateUsage = unitTestHelpers.simulateUsage;
-import getUrlsFromRequestArray = unitTestHelpers.getUrlsFromRequestArray;
 
 describe('unit', async (): Promise<void> => {
     let requestInterceptor: RequestInterceptor;
@@ -106,7 +106,7 @@ describe('unit', async (): Promise<void> => {
 
         it('should retrieve expected urls from matched Requests', () => {
             assert.deepStrictEqual(
-                getUrlsFromRequestArray(requestSpy.getMatchedRequests()),
+                requestSpy.getMatchedRequests().map((request: Request) => request.url()),
                 [
                     'spy',
                     'spy',
@@ -187,9 +187,9 @@ describe('unit', async (): Promise<void> => {
 
         it('should return passed patterns as Array', async (): Promise<void> => {
             let responseModifierWithArray: ResponseModifier = new ResponseModifier(
-                new HttpRequestFactory(),
                 ['some/pattern/**/*'],
-                (originalResponse: string): string => originalResponse.replace(' body', '')
+                (originalResponse: string): string => originalResponse.replace(' body', ''),
+                new HttpRequestFactory()
             );
             assert.deepStrictEqual(responseModifierWithArray.getPatterns(), ['some/pattern/**/*']);
         });
