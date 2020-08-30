@@ -4,6 +4,7 @@ import {Request, RespondOptions} from 'puppeteer';
 import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {assertThrowsAsync} from '../common/AssertionHelpers';
 import {getRequestDouble} from '../common/testDoubleFactories';
+import {HttpHeaders} from 'nock';
 
 describe('class: HttpRequestFactory', () => {
 
@@ -46,18 +47,19 @@ describe('class: HttpRequestFactory', () => {
 
 
         it('should create correct headers from response', async () => {
+            let headers: HttpHeaders = <HttpHeaders> <unknown> {
+                'content-type': 'text/plain',
+                'test-header-single': 'val',
+                'test-header-multi': ['val', 'val2'],
+                'text-header-empty': undefined
+            };
+
             nock('http://www.example.com')
                 .get('/resource')
                 .reply(
                     200,
                     () => 'path matched',
-                    // @ts-ignore
-                    {
-                        'content-type': 'text/plain',
-                        'test-header-single': 'val',
-                        'test-header-multi': ['val', 'val2'],
-                        'text-header-empty': undefined
-                    }
+                    headers
                 );
 
             let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory();
