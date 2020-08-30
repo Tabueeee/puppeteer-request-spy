@@ -44,12 +44,12 @@ if (\nRequest matches pattern\nof any ResponseFakers?\n) then ( yes )
   :Respond Fake with\nrequest.respond;
   stop
 else ( no )
-    if (\nRequest matches Pattern\nof any RequestModifiers?\n) then ( yes )
+    if (\nRequest matches pattern\nof any RequestModifiers?\n) then ( yes )
         :Get __first__ matching\nRequestModifier;
-        :return Modified response\nwith request.continue(overrides);
+        :Return modified response\nwith request.continue(overrides);
         stop
     else ( no )
-        :return Original response\nwith request.continue();
+        :Return original response\nwith request.continue();
         stop
     endif
 endif

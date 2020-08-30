@@ -37,9 +37,46 @@ describe('class: HttpRequestFactory', () => {
             assert.deepStrictEqual(response, {
                 body: 'path matched',
                 contentType: 'text/plain',
+                headers: {
+                    'content-type': 'text/plain'
+                },
                 status: 200
             });
         });
+
+
+        it('should create correct headers from response', async () => {
+            // noinspection TsLint
+            nock('http://www.example.com')
+                .get('/resource')
+                // @ts-ignore nock types do not allow for undefined, http's request-object does
+                .reply(200, 'path matched', {
+                    'content-type': 'text/plain',
+                    'test-header-single': 'val',
+                    'test-header-multi': ['val', 'val2'],
+                    'text-header-empty': undefined
+                });
+
+            let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory();
+            let loader: () => Promise<RespondOptions> = httpRequestFactory.createResponseLoader(
+                <Request>getRequestDouble(),
+                'http://www.example.com/resource'
+            );
+            let response: RespondOptions = await loader();
+
+            assert.deepStrictEqual(response, {
+                body: 'path matched',
+                contentType: 'text/plain',
+                headers: {
+                    'content-type': 'text/plain',
+                    'test-header-single': 'val',
+                    'test-header-multi': 'val, val2',
+                    'text-header-empty': ''
+                },
+                status: 200
+            });
+        });
+
 
         it('should create a promise based loader from a request', async () => {
             // noinspection TsLint
@@ -59,6 +96,9 @@ describe('class: HttpRequestFactory', () => {
             assert.deepStrictEqual(response, {
                 body: 'path matched',
                 contentType: 'text/plain',
+                headers: {
+                    'content-type': 'text/plain'
+                },
                 status: 200
             });
         });

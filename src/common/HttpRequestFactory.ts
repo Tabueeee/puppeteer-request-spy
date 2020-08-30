@@ -1,5 +1,5 @@
 import Timeout = NodeJS.Timeout;
-import {ClientRequest, IncomingMessage, request as httpRequest, RequestOptions} from 'http';
+import {ClientRequest, IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions} from 'http';
 import {Request, RespondOptions} from 'puppeteer';
 import {URL} from 'url';
 import {UrlAccessor} from './urlAccessor/UrlAccessor';
@@ -34,14 +34,9 @@ export class HttpRequestFactory {
                     headers: headers
                 };
 
-                let timeout: Timeout = setTimeout(
-                    () => {
-                        reject(new Error(`request timed out after ${this.timeout / 1000} seconds.`));
-                    },
-                    this.timeout
-                );
-
+                let timeout: Timeout | undefined;
                 let req: ClientRequest = httpRequest(options, (res: IncomingMessage) => {
+
                     let chunks: Array<Buffer> = [];
 
                     res.on('data', (chunk: Buffer) => {
@@ -50,14 +45,52 @@ export class HttpRequestFactory {
 
                     res.on('end', () => {
                         let body: Buffer = Buffer.concat(chunks);
-                        clearTimeout(timeout);
 
-                        resolve({body: body.toString(), contentType: res.headers['content-type'], status: res.statusCode});
+                        if (typeof timeout !== 'undefined') {
+                            clearTimeout(timeout);
+                        }
+
+                        resolve(
+                            {
+                                body: body.toString(),
+                                contentType: res.headers['content-type'],
+                                status: res.statusCode,
+                                headers: Object
+                                    .keys(res.headers)
+                                    .reduce(this.convertHeaders.bind(this, res.headers), {})
+                            }
+                        );
                     });
                 });
+
+                timeout = setTimeout(
+                    () => {
+                        req.end();
+                        reject(new Error(`unable to load: ${url}. request timed out after ${this.timeout / 1000} seconds.`));
+                    },
+                    this.timeout
+                );
 
                 req.end();
             });
         };
+    }
+
+    private convertHeaders(
+        responseHeaders: IncomingHttpHeaders,
+        prev: { [index: string]: string },
+        key: string
+    ): { [index: string]: string } {
+        let currentHeader: string | Array<string> | undefined = responseHeaders[key];
+
+        if (typeof currentHeader === 'string') {
+            prev[key] = currentHeader;
+        } else if (Array.isArray(currentHeader)) {
+            prev[key] = currentHeader.join(', ');
+        } else {
+            prev[key] = '';
+        }
+
+        return prev;
     }
 }

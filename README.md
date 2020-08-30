@@ -72,25 +72,37 @@ Note
 > Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception, if the `requestInterception` flag is not set.
 
 
-
 ### Altering Requests
 
 All ResponseFakers and ResponseModifiers now accept a callback for resolving the passed options. This callback can also be async or return a promise. 
 
 ```js
-// static mock
-let requestRedirector = new RequestRedirector('/ajax/some-request', 'some/other/url');                  
-// callback mock
-let requestModifier = new RequestModifier('/ajax/some-request', (matchedRequest) => ({url: '/ajax/some-different-request'}));    
-// async callback mock
-let requestRedirector = new RequestRedirector('/ajax/some-request', async (matchedRequest) => 'some/new/url');                  
-// promise callback mock
-let responseFaker = new ResponseFaker('/ajax/some-request', (matchedRequest) => Promise.resolve(
-    ({
+// static options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+    'some/other/url'
+);                  
+
+// callback options
+let requestModifier = new RequestModifier(
+    '/ajax/some-request',
+    (matchedRequest) => ({url: '/ajax/some-different-request'})
+);  
+  
+// async callback options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+     async (matchedRequest) => 'some/new/url'
+);   
+               
+// promise callback options
+let responseFaker = new ResponseFaker(
+    '/ajax/some-request',
+    (matchedRequest) => Promise.resolve(({
         status: 200, 
         contentType: 'application/json',
-        body: JSON.stringify({successful: false, payload: []})})
-    )
+        body: JSON.stringify({successful: false, payload: []})
+    }))
 );                                                        
 ```
 
@@ -99,8 +111,8 @@ let responseFaker = new ResponseFaker('/ajax/some-request', (matchedRequest) => 
 Intercepted requests can be modified by passing an overrides object to the RequestModifier. The response overrides have to match the Overrides object as specified in the official [puppeteer API](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#httprequestcontinueoverrides).
 
 ```js
-let requestModifier = new RequestModifier('/ajax/some-request', {
-  url: '/ajax/some-different-request',
+let requestModifier = new RequestModifier('/ajax/some-post-request', {
+  url: '/ajax/some-get-request',
   method: 'GET',
   postData: '',
   headers: {}
@@ -121,7 +133,7 @@ requestInterceptor.addRequestModifier(requestRedirector);
 The RequestRedirector uses the IRequestModifier interface.
 
 #### Blocking Requests    
-Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over overriding requests or faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
 
 ```js
 requestInterceptor.block(['scripts', 'track', '.png']);      
@@ -164,7 +176,7 @@ The ResponseModifier uses the IResponseFaker interface.
 
 ## Advanced Usage
 
-As long as you follow the interfaces provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/src/interface) you can create your own Spies, Fakers or Modifiers.
+As long as you follow the interfaces provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/src/interface) you can create your own Spies, Fakers, Modifiers or Blocker.
 
 
 ````js 
@@ -188,6 +200,12 @@ interceptor.addFaker({
 interceptor.addRequestModifier({
     isMatchingRequest: (_request, _matcher) => true,
     getOverride: (interceptedRequest) => ({url: ''})
+});
+
+interceptor.setRequestBlocker({
+    shouldBlockRequest: (_request, _matcher) => true,
+    clearUrlsToBlock: () => undefined
+    addUrlsToBlock: (urlsToBlock) => undefined
 });
 
 ````
@@ -214,6 +232,10 @@ for (let matchedRequest of cssSpy.getMatchedRequests()) {
     assert.ok(matchedRequest.response().status() === 200);
 }
 ```
+# API
+
+Full API can be found [here](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/documentation/API.md).
+
 # Examples
 
 There are some usage examples included in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.

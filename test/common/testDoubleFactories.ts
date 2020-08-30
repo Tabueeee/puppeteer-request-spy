@@ -28,7 +28,7 @@ export function getRequestModifierDouble(matches: boolean, override: Overrides):
 }
 
 export function getRequestDouble(url: string = 'any-url', requestMock?: { nock(): void, requestCount: number }): TestDouble<Request> {
-    if (typeof  requestMock !== 'undefined') {
+    if (typeof requestMock !== 'undefined') {
         for (let index: number = 0; index < requestMock.requestCount; index++) {
             requestMock.nock();
         }
@@ -41,8 +41,12 @@ export function getRequestDouble(url: string = 'any-url', requestMock?: { nock()
         url: (): string => url,
         method: (): string => 'GET',
         failure: (): boolean => false,
-        headers: (): {[index: string]: string} => ({}),
-        postData: (): {[index: string]: string} => ({})
+        headers: (): { [index: string]: string } => ({
+            'test-header-single': 'val',
+            'test-header-multi': 'val, val2',
+            'text-header-empty': ''
+        }),
+        postData: (): { [index: string]: string } => ({})
     };
 }
 

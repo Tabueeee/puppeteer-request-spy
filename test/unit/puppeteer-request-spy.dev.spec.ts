@@ -177,6 +177,9 @@ describe('unit', async (): Promise<void> => {
             sinon.assert.calledWithExactly(<SinonSpy>requestMatchingResponseModifier.respond, {
                 status: 200,
                 contentType: 'text/html',
+                headers: {
+                    'content-type': 'text/html'
+                },
                 body: 'original response'
             });
         });
@@ -188,7 +191,7 @@ describe('unit', async (): Promise<void> => {
         it('should return passed patterns as Array', async (): Promise<void> => {
             let responseModifierWithArray: ResponseModifier = new ResponseModifier(
                 ['some/pattern/**/*'],
-                (originalResponse: string): string => originalResponse.replace(' body', ''),
+                (err: Error | undefined, response: string): string => err ? err.toString() : response.replace(' body', ''),
                 new HttpRequestFactory()
             );
             assert.deepStrictEqual(responseModifierWithArray.getPatterns(), ['some/pattern/**/*']);
@@ -211,7 +214,11 @@ describe('unit', async (): Promise<void> => {
             sinon.assert.alwaysCalledWith(
                 <SinonSpy>requestMatchingRequestRedirector.continue,
                 {
-                    headers: {},
+                    headers: {
+                        'test-header-single': 'val',
+                        'test-header-multi': 'val, val2',
+                        'text-header-empty': ''
+                    },
                     method: 'GET',
                     postData: {},
                     url: 'http://www.example.com/requestRedirector'
@@ -224,7 +231,11 @@ describe('unit', async (): Promise<void> => {
             sinon.assert.alwaysCalledWith(
                 <SinonSpy>requestMatchingRequestRedirector.continue,
                 {
-                    headers: {},
+                    headers: {
+                        'test-header-single': 'val',
+                        'test-header-multi': 'val, val2',
+                        'text-header-empty': ''
+                    },
                     method: 'GET',
                     postData: {},
                     url: 'http://www.example.com/requestRedirector'

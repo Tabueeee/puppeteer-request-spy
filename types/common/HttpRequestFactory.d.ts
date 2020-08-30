@@ -4,4 +4,5 @@ export declare class HttpRequestFactory {
     constructor(timeout?: number);
     createOriginalResponseLoaderFromRequest(request: Request): () => Promise<RespondOptions>;
     createResponseLoader(request: Request, urlString: string): () => Promise<RespondOptions>;
+    private convertHeaders;
 }

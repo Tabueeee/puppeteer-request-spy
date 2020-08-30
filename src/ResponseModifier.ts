@@ -42,14 +42,25 @@ export class ResponseModifier implements IResponseFaker {
     }
 
     public async getResponseFake(request: Request): Promise<RespondOptions> {
-        let originalResponse: RespondOptions = await this.httpRequestFactory.createOriginalResponseLoaderFromRequest(request)();
+        let originalResponse: RespondOptions = {};
+        let error: Error | undefined;
+        let body: string;
+
+        try {
+            originalResponse = await this.httpRequestFactory.createOriginalResponseLoaderFromRequest(request)();
+            body = <string> originalResponse.body;
+        } catch (err) {
+            error = <Error> err;
+            body = '';
+        }
 
         return Object.assign(
             {},
             originalResponse,
             {
                 body: await resolveOptionalPromise(this.responseModifierCallBack(
-                    (typeof originalResponse.body === 'string' ? originalResponse.body : '').toString(),
+                    error,
+                    body,
                     request
                 ))
             }

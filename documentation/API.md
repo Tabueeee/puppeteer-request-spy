@@ -1,5 +1,15 @@
 # API
 
+## Table of Content
+
+- [Class: RequestInterceptor](#class-requestinterceptor)
+- [Class: RequestSpy](#class-requestspy-implements-irequestspy)
+- [Class: ResponseFaker](#class-responsefaker-implements-iresponsefaker)
+- [Class: ResponseModifier](#class-responsemodifier-implements-iresponsefaker)
+- [Class: RequestModifier](#class-requestmodifier-implements-irequestmodifier)
+- [Class: RequestRedirector](#class-requestredirector-implements-irequestmodifier)
+- [Class: RequestBlocker](#class-requestblocker-implements-iresponseblocker)
+
 ## class: RequestInterceptor
 The `RequestInterceptor` will call all spies, fakers and blocker to dertermine if an intercepted request matches. against the `matcher` function and notify all spies with a matching pattern and block requests matching any pattern in `urlsToBlock`.
 
@@ -51,6 +61,7 @@ Clears all registered patterns in `urlsToBlock`.
 
 Allows you to replace the default RequestBlocker by your own implementation.
 
+-----
 
 ## class: RequestSpy implements IRequestSpy
 `RequestSpy` is used to count and verify intercepted requests matching a specific pattern.
@@ -84,6 +95,7 @@ The `RequestInterceptor` calls this method to determine if an interceptedRequest
 
 The `RequestInterceptor` calls this method when an interceptedRequest matches the pattern.
 
+-----
 
 ## class: ResponseFaker implements IResponseFaker
 `ResponseFaker` is used to provide a fake response when matched to a specific pattern. 
@@ -107,6 +119,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+-----
 
 ## class: ResponseModifier implements IResponseFaker
 `ResponseModifier` is used to load the original response and modify it on the fly as a fake response when matched to a specific pattern. 
@@ -131,6 +144,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+-----
 
 ## class: RequestModifier implements IRequestModifier
 `RequestModifier` is used to change the matched request to a different request. 
@@ -155,6 +169,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+-----
 
 ## class: RequestRedirector implements IRequestModifier
 `RequestRedirector` is used to change the matched request to a different url. 
@@ -179,6 +194,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
+-----
 
 ## class: RequestBlocker implements IResponseBlocker 
 `RequestBlocker` is used to by the RequestInterceptor to match requests to block. 

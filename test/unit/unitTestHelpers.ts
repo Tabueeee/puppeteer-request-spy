@@ -54,7 +54,7 @@ export module unitTestHelpers {
         let requestModifier: RequestModifier = new RequestModifier('modifier', overrides);
         let responseModifier: ResponseModifier = new ResponseModifier(
             'responseModifier',
-            (originalResponse: string): string => originalResponse.replace(' body', ''),
+            (err: Error | undefined, response: string): string => err ? err.toString() : response.replace(' body', ''),
             new HttpRequestFactory()
         );
 

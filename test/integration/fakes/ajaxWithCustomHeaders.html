@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title></title>
+    <script>
+        var data = null;
+
+        var xhr             = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === this.DONE) {
+                document.body.innerHTML = this.responseText;
+            }
+        });
+
+        xhr.open("GET", "http://localhost:1337/show-headers-real");
+        xhr.setRequestHeader("some-custom-header", "123");
+        xhr.setRequestHeader("some-custom-header", "456");
+        xhr.setRequestHeader("some-custom-header2", "");
+        xhr.setRequestHeader("some-custom-header3", "some");
+        xhr.setRequestHeader("pragma", "no-cache");
+        xhr.setRequestHeader("cache-control", "no-cache");
+        xhr.setRequestHeader("accept", "*/*");
+
+        xhr.send(data);
+    </script>
+</head>
+
+<body></body>
+</html>

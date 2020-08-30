@@ -1,24 +1,19 @@
-import * as StaticServer from 'static-server';
 import {serverSettings} from './ServerSettings';
+import {testServer} from './testServer';
 
 export class ServerDouble {
-
-    private server: StaticServer;
-
-    public constructor() {
-        this.server = new StaticServer(serverSettings);
-    }
+    // tslint:disable-next-line:no-any
+    private server: any;
 
     public async start(): Promise<{}> {
         return new Promise((resolve: () => void): void => {
-            this.server.start((): void => {
-                resolve();
-            });
+            this.server = testServer.listen(serverSettings.port);
+            resolve();
         });
     }
 
     public stop(): void {
-        this.server.stop();
+        this.server.close();
     }
 }
 

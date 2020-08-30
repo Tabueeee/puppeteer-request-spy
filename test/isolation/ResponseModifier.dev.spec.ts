@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import {Request} from 'puppeteer';
+import * as sinon from 'sinon';
 import {HttpRequestFactory} from '../../src/common/HttpRequestFactory';
 import {ResponseModifier} from '../../src/ResponseModifier';
 import {getHttpRequestFactoryDouble, getRequestDouble} from '../common/testDoubleFactories';
@@ -23,14 +24,12 @@ describe('class: ResponseModifier', (): void => {
 
         it('accepts multiple string patterns as array', (): void => {
             assert.doesNotThrow(() => {
-                let httpRequestFactory: HttpRequestFactory = <HttpRequestFactory>getHttpRequestFactoryDouble('any-response');
                 // noinspection TsLint
                 new ResponseModifier(
                     ['some-pattern/**/*', 'some-pattern/**/*', 'some-pattern/**/*'],
                     (): any => {
                         return {};
-                    },
-                    httpRequestFactory
+                    }
                 );
             });
         });
@@ -39,7 +38,7 @@ describe('class: ResponseModifier', (): void => {
             let httpRequestFactory: HttpRequestFactory = <HttpRequestFactory>getHttpRequestFactoryDouble('payload');
             let responseModifier: ResponseModifier = new ResponseModifier(
                 'some-pattern/**/*',
-                (response: string): string => `${response}1`,
+                (err: Error | undefined, response: string): string => err ? err.toString() : `${response}1`,
                 httpRequestFactory
             );
 
@@ -93,6 +92,35 @@ describe('class: ResponseModifier', (): void => {
                 // @ts-ignore: ignore error to test invalid input from js
                 new ResponseModifier(httpRequestFactory, 3, {}).getPatterns();
             });
+        });
+
+        it('passes error when resource is unavailable', async (): Promise<void> => {
+            let expectedError: Error = new Error('ERROR!');
+
+            let httpRequestFactory: HttpRequestFactory = <HttpRequestFactory>(<unknown>{
+                createOriginalResponseLoaderFromRequest: () => () => Promise.reject(expectedError)
+            });
+
+            let modifierCallbackSpy: sinon.SinonSpy = sinon.spy();
+
+            let responseModifier: ResponseModifier = new ResponseModifier(
+                'some-pattern/**/*',
+                (err: Error | undefined, body: string) => {
+                    modifierCallbackSpy(err, body);
+
+                    return err ? 'oh no!' : body;
+                },
+                httpRequestFactory
+            );
+
+
+            let request: Request = <Request>getRequestDouble();
+
+            assert.deepStrictEqual(await responseModifier.getResponseFake(request), {
+                body: 'oh no!'
+            });
+            sinon.assert.callCount(modifierCallbackSpy, 1);
+            sinon.assert.calledWithExactly(modifierCallbackSpy, expectedError, '');
         });
     });
 });

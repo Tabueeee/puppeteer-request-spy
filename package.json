@@ -23,9 +23,7 @@
     "test-silent": "node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/**/*.dev.spec.js > test-ts.log",
     "test-coverage-travis": "node_modules/.bin/nyc --all --reporter=text-lcov npm run test-silent | node node_modules/coveralls/bin/coveralls.js",
     "prerelease-dry": "npm run update-typings && npm run test-silent-full",
-    "release-dry": "npm pack",
-    "presingle": "tsc -p tsconfig.json --sourcemap",
-    "single": "node_modules/.bin/nyc --all --reporter=html node_modules/.bin/mocha --timeout 10000 --require source-map-support/register build/test/isolation/**/*.spec.js > test-ts.log"
+    "release-dry": "npm pack"
   },
   "engines": {
     "node": ">=6.4.0"
@@ -63,6 +61,9 @@
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "^5.0.4",
+    "@types/koa": "^2.11.4",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/mime-types": "^2.1.0",
     "@types/minimatch": "^3.0.3",
     "@types/mocha": "^5.2.0",
     "@types/nock": "^9.3.1",
@@ -73,14 +74,16 @@
     "coveralls": "^3.0.1",
     "del": "^3.0.0",
     "fs-extra": "^7.0.1",
+    "koa": "^2.13.0",
+    "koa-bodyparser": "^4.3.0",
+    "mime-types": "^2.1.27",
     "minimatch": "^3.0.4",
     "mocha": "^5.1.1",
     "nock": "^10.0.6",
     "nyc": "^11.7.1",
-    "puppeteer": "^1.12.2",
+    "puppeteer": "^1.20.0",
     "sinon": "^4.5.0",
     "source-map-support": "^0.5.5",
-    "static-server": "^2.2.1",
     "ts-node": "^7.0.1",
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^5.0.1",
