@@ -1,4 +1,3 @@
-import Timeout = NodeJS.Timeout;
 import {ClientRequest, IncomingHttpHeaders, IncomingMessage, request as httpRequest, RequestOptions} from 'http';
 import {Request, RespondOptions} from 'puppeteer';
 import {URL} from 'url';
@@ -34,7 +33,7 @@ export class HttpRequestFactory {
                     headers: headers
                 };
 
-                let timeout: Timeout | undefined;
+                let timeout: NodeJS.Timeout;
                 let req: ClientRequest = httpRequest(options, (res: IncomingMessage) => {
 
                     let chunks: Array<Buffer> = [];
@@ -46,9 +45,7 @@ export class HttpRequestFactory {
                     res.on('end', () => {
                         let body: Buffer = Buffer.concat(chunks);
 
-                        if (typeof timeout !== 'undefined') {
-                            clearTimeout(timeout);
-                        }
+                        clearTimeout(timeout);
 
                         resolve(
                             {

@@ -46,16 +46,19 @@ describe('class: HttpRequestFactory', () => {
 
 
         it('should create correct headers from response', async () => {
-            // noinspection TsLint
             nock('http://www.example.com')
                 .get('/resource')
-                // @ts-ignore nock types do not allow for undefined, http's request-object does
-                .reply(200, 'path matched', {
-                    'content-type': 'text/plain',
-                    'test-header-single': 'val',
-                    'test-header-multi': ['val', 'val2'],
-                    'text-header-empty': undefined
-                });
+                .reply(
+                    200,
+                    () => 'path matched',
+                    // @ts-ignore
+                    {
+                        'content-type': 'text/plain',
+                        'test-header-single': 'val',
+                        'test-header-multi': ['val', 'val2'],
+                        'text-header-empty': undefined
+                    }
+                );
 
             let httpRequestFactory: HttpRequestFactory = new HttpRequestFactory();
             let loader: () => Promise<RespondOptions> = httpRequestFactory.createResponseLoader(
