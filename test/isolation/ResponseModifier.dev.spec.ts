@@ -98,7 +98,7 @@ describe('class: ResponseModifier', (): void => {
             let expectedError: Error = new Error('ERROR!');
 
             let httpRequestFactory: HttpRequestFactory = <HttpRequestFactory>(<unknown>{
-                createOriginalResponseLoaderFromRequest: () => () => Promise.reject(expectedError)
+                createRequest: () => Promise.reject(expectedError)
             });
 
             let modifierCallbackSpy: sinon.SinonSpy = sinon.spy();

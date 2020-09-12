@@ -43,8 +43,17 @@ export class RequestInterceptor {
             return;
         }
 
-        let responseFaker: undefined | IResponseFaker = await this.getMatchingFaker(interceptedRequest);
+        let requestOverride: Overrides | undefined = await this.getMatchingOverride(interceptedRequest);
 
+        if (typeof requestOverride !== 'undefined') {
+            let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
+            await interceptedRequest.continue(requestOverride);
+            this.logger.log(`modified: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
+
+            return;
+        }
+
+        let responseFaker: undefined | IResponseFaker = await this.getMatchingFaker(interceptedRequest);
         if (typeof responseFaker !== 'undefined') {
             let responseFake: RespondOptions | Promise<RespondOptions> = responseFaker.getResponseFake(interceptedRequest);
             await interceptedRequest.respond(await resolveOptionalPromise<RespondOptions>(responseFake));
@@ -53,9 +62,7 @@ export class RequestInterceptor {
             return;
         }
 
-        let requestOverride: Overrides | undefined = await this.getMatchingOverride(interceptedRequest);
-
-        await this.acceptUrl(interceptedRequest, requestOverride);
+        await this.acceptUrl(interceptedRequest);
     }
 
     public addSpy(requestSpy: IRequestSpy): void {
@@ -152,23 +159,17 @@ export class RequestInterceptor {
             await interceptedRequest.abort();
             this.logger.log(`aborted: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
-            this.logger.log((<Error> error).toString());
+            this.logger.log((<Error>error).toString());
         }
     }
 
-    private async acceptUrl(interceptedRequest: Request, requestOverride?: Overrides): Promise<void> {
+    private async acceptUrl(interceptedRequest: Request): Promise<void> {
         let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
-
         try {
-            if (typeof requestOverride !== 'undefined') {
-                await interceptedRequest.continue(requestOverride);
-                this.logger.log(`redirected: ${urlAccessor.getUrlFromRequest(interceptedRequest)} to ${requestOverride.url}`);
-            } else {
-                await interceptedRequest.continue();
-                this.logger.log(`loaded: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
-            }
+            await interceptedRequest.continue();
+            this.logger.log(`loaded: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
-            this.logger.log((<Error> error).toString());
+            this.logger.log((<Error>error).toString());
         }
     }
 }

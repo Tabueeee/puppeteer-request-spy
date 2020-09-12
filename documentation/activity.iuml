@@ -39,19 +39,22 @@ else ( yes )
 
 endif
 
-if (\nRequest matches pattern\nof any ResponseFakers?\n) then ( yes )
-  :Get __first__ matching\nResponseFaker;
-  :Respond Fake with\nrequest.respond;
-  stop
+
+if (\nRequest matches pattern\nof any RequestModifiers?\n) then ( yes )
+    :Get __first__ matching\nRequestModifier;
+    :Return modified response\nwith request.continue(overrides);
+    stop
 else ( no )
-    if (\nRequest matches pattern\nof any RequestModifiers?\n) then ( yes )
-        :Get __first__ matching\nRequestModifier;
-        :Return modified response\nwith request.continue(overrides);
-        stop
+    if (\nRequest matches pattern\nof any ResponseFakers?\n) then ( yes )
+      :Get __first__ matching\nResponseFaker;
+      :Respond Fake with\nrequest.respond;
+      stop
     else ( no )
-        :Return original response\nwith request.continue();
-        stop
+      :Return original response\nwith request.continue();
+      stop
     endif
 endif
+
+
 
 @enduml

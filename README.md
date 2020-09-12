@@ -152,7 +152,7 @@ let responseFaker = new ResponseFaker('/ajax/some-request', {
 
 requestInterceptor.addFaker(responseFaker);
 ```
-For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/blob/master/examples/fake-test.spec.js).
+For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](./examples/fake-test.spec.js).
 
 #### Modifying Responses
 It's also possible to replace the content of a response instead of replacing it:
@@ -176,7 +176,7 @@ The ResponseModifier uses the IResponseFaker interface.
 
 ## Advanced Usage
 
-As long as you follow the interfaces provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/src/interface) you can create your own Spies, Fakers, Modifiers or Blocker.
+As long as you follow the interfaces provided in the [github repository](./src/interface) you can create your own Spies, Fakers, Modifiers or Blocker.
 
 
 ````js 
@@ -234,11 +234,11 @@ for (let matchedRequest of cssSpy.getMatchedRequests()) {
 ```
 # API
 
-Full API can be found [here](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/documentation/API.md).
+Full API can be found [here](./documentation/API.md).
 
 # Examples
 
-There are some usage examples included in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.
+There are some usage examples included in the [github repository](./examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.
 
 # Related
  - [minimatch](https://github.com/isaacs/minimatch) - For easily matching path-like strings to patterns.

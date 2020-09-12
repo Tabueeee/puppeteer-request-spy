@@ -52,22 +52,17 @@ export function getRequestDouble(url: string = 'any-url', requestMock?: { nock()
 
 export function getHttpRequestFactoryDouble(fakeResponse: string, spy?: SinonSpy): TestDouble<HttpRequestFactory> {
     return {
-        createResponseLoader: (request: Request, url: string): Function => {
+        createRequest: (request: Request): RespondOptions => {
             if (typeof spy !== 'undefined') {
-                spy(request, url);
+                spy(request);
             }
 
-            return (): RespondOptions => ({
+            return {
                 status: 200,
                 body: fakeResponse,
                 contentType: 'text/plain'
-            });
-        },
-        createOriginalResponseLoaderFromRequest: (): Function => (): RespondOptions => ({
-            status: 200,
-            body: fakeResponse,
-            contentType: 'text/plain'
-        })
+            };
+        }
     };
 }
 

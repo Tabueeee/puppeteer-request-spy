@@ -3,6 +3,7 @@ import {HttpRequestFactory} from './common/HttpRequestFactory';
 import {resolveOptionalPromise} from './common/resolveOptionalPromise';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
+import {IRequestLoaderFactory} from './interface/IRequestLoaderFactory';
 import {IResponseFaker} from './interface/IResponseFaker';
 import {RequestMatcher} from './types/RequestMatcher';
 import {ResponseModifierCallBack} from './types/ResponseModifierCallBack';
@@ -10,12 +11,12 @@ import {ResponseModifierCallBack} from './types/ResponseModifierCallBack';
 export class ResponseModifier implements IResponseFaker {
     private patterns: Array<string>;
     private responseModifierCallBack: ResponseModifierCallBack;
-    private httpRequestFactory: HttpRequestFactory;
+    private httpRequestFactory: IRequestLoaderFactory;
 
     public constructor(
         patterns: Array<string> | string,
         responseModifierCallBack: ResponseModifierCallBack,
-        httpRequestFactory: HttpRequestFactory = (new HttpRequestFactory())
+        httpRequestFactory: IRequestLoaderFactory = (new HttpRequestFactory())
     ) {
         if (typeof patterns !== 'string' && patterns.constructor !== Array) {
             throw new Error('invalid pattern, pattern must be of type string or string[].');
@@ -47,7 +48,7 @@ export class ResponseModifier implements IResponseFaker {
         let body: string;
 
         try {
-            originalResponse = await this.httpRequestFactory.createOriginalResponseLoaderFromRequest(request)();
+            originalResponse = await this.httpRequestFactory.createRequest(request);
             body = <string> originalResponse.body;
         } catch (err) {
             error = <Error> err;
