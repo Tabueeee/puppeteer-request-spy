@@ -11,7 +11,7 @@ export class RequestRedirector implements IRequestModifier {
 
     public constructor(
         patterns: Array<string> | string,
-        redirectionUrl: ((request: Request) => string) | string
+        redirectionUrl: ((request: Request) => Promise<string> | string) | string
     ) {
         if (typeof patterns !== 'string' && patterns.constructor !== Array) {
             throw new Error('invalid pattern, pattern must be of type string or string[].');

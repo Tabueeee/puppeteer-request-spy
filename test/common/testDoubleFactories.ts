@@ -75,7 +75,7 @@ export function getLowVersionRequestDouble(): TestDouble<Request> {
     };
 }
 
-export function getRequestFakerDouble(matches: boolean): TestDouble<ResponseFaker> {
+export function getResponseFakerDouble(matches: boolean): TestDouble<ResponseFaker> {
     return {
         getResponseFake: sinon.spy(),
         isMatchingRequest: sinon.stub().returns(matches)

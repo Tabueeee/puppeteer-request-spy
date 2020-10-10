@@ -1,5 +1,5 @@
 import { Request, RespondOptions } from 'puppeteer';
-export interface IRequestLoaderFactory {
+export interface IRequestFactory {
     createRequest(request: Request): Promise<RespondOptions & {
         body: string;
     }>;

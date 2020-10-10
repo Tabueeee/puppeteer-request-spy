@@ -1,5 +1,5 @@
 import {IRequestBlocker} from './interface/IRequestBlocker';
-import {IRequestLoaderFactory} from './interface/IRequestLoaderFactory';
+import {IRequestFactory} from './interface/IRequestFactory';
 import {IRequestModifier} from './interface/IRequestModifier';
 import {IRequestSpy} from './interface/IRequestSpy';
 import {IResponseFaker} from './interface/IResponseFaker';
@@ -23,7 +23,7 @@ export {
     IRequestModifier,
     IRequestSpy,
     IResponseFaker,
-    IRequestLoaderFactory,
+    IRequestFactory,
     RequestMatcher,
     ResponseModifierCallBack
 };

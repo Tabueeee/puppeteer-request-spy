@@ -11,7 +11,7 @@ import {TestDouble} from '../common/TestDouble';
 import {
     getErrorRequestDouble,
     getRequestDouble,
-    getRequestFakerDouble,
+    getResponseFakerDouble,
     getRequestModifierDouble,
     getRequestSpyDouble
 } from '../common/testDoubleFactories';
@@ -112,7 +112,7 @@ describe('class: RequestInterceptor', (): void => {
             let matcher: RequestMatcher = sinon.stub().returns(true);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let matchesRequest: boolean = true;
-            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble(matchesRequest);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getResponseFakerDouble(matchesRequest);
             let request: TestDouble<Request> = getRequestDouble();
             requestInterceptor.addFaker(<ResponseFaker>responseFakerTestDouble);
 
@@ -125,7 +125,7 @@ describe('class: RequestInterceptor', (): void => {
             let matcher: RequestMatcher = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let matchesRequest: boolean = false;
-            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble(matchesRequest);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getResponseFakerDouble(matchesRequest);
             let request: TestDouble<Request> = getRequestDouble();
             requestInterceptor.addFaker(<ResponseFaker>responseFakerTestDouble);
 
@@ -151,12 +151,12 @@ describe('class: RequestInterceptor', (): void => {
             assert.ok(requestSpy.addMatch.callCount === 0 && requestSpy.isMatchingRequest.called === false);
         });
 
-        it('clears list of RequestFaker', async (): Promise<void> => {
+        it('clears list of ResponseFaker', async (): Promise<void> => {
             let matcher: RequestMatcher = sinon.stub().returns(false);
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
             let matchesRequest: boolean = true;
-            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble(matchesRequest);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getResponseFakerDouble(matchesRequest);
 
             requestInterceptor.addFaker(<ResponseFaker>responseFakerTestDouble);
             requestInterceptor.addFaker(<ResponseFaker>responseFakerTestDouble);
@@ -216,7 +216,7 @@ describe('class: RequestInterceptor', (): void => {
             let requestInterceptor: RequestInterceptor = new RequestInterceptor(matcher);
             let request: TestDouble<Request> = getRequestDouble();
             let matchesRequest: boolean = true;
-            let responseFakerTestDouble: TestDouble<ResponseFaker> = getRequestFakerDouble(matchesRequest);
+            let responseFakerTestDouble: TestDouble<ResponseFaker> = getResponseFakerDouble(matchesRequest);
             requestInterceptor.addFaker(<ResponseFaker>responseFakerTestDouble);
 
             await requestInterceptor.intercept(<Request>request);

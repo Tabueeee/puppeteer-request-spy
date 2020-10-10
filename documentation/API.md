@@ -26,38 +26,44 @@ The `logger` if provided will output any requested url with a 'loaded' or 'abort
 Function to be registered with puppeteer's request event.
 
 ### RequestInterceptor.addSpy(requestSpy)   
-- requestSpy: \<IRequestSpy> spy to register
+- `requestSpy`: \<IRequestSpy> spy to register
 
-Register a spy with the `RequestInterceptor`.
+Register a `RequestSpy` with the `RequestInterceptor`.
 
 ### RequestInterceptor.clearSpies()
 Clears all registered spies.
 
-### RequestInterceptor.addFaker(requestFaker)
-- responseFaker: \<IResponseFaker> faker to register
+### RequestInterceptor.addFaker(responseFaker)
+- `responseFaker`: \<IResponseFaker> faker to register      
+
+Register a `ResonseFaker` with the `RequestInterceptor`.
 
 ### RequestInterceptor.clearFakers()
 Clears all registered fakers.
 
 ### RequestInterceptor.addRequestModifier(requestModifier)
-- responseModifier: \<IRequestModifier> modifier to register
+- `responseModifier`: \<IRequestModifier> modifier to register   
+ 
+Register a `RequestModifier` with the `RequestInterceptor`.
 
-### RequestInterceptor.clearFakers()
+### RequestInterceptor.clearRequestModifiers()
 Clears all registered modifiers.
 
 ### RequestInterceptor.block(urlsToBlock)
-- urlsToBlock: \<Array\<string\> | \<string\>\> urls to be blocked if matched
+- `urlsToBlock`: \<Array\<string\> | \<string\>\> urls to be blocked if matched
 
-`block` will always add urls to the list `urlsToBlock`. Passed arrays will be merged with `urlsToBlock`.
+`block` will always add urls to the list of urls to block. Passed arrays will be merged with existing urls to block.
 
 ### RequestInterceptor.setUrlsToBlock(urlsToBlock)
-- urlsToBlock: <Array\<string>> setter for `urlsToBlock`
+- `urlsToBlock`: <Array\<string>> setter for `urlsToBlock`
+
+Setter to overwrite existing urls to block.
 
 ### RequestInterceptor.clearUrlsToBlock()
-Clears all registered patterns in `urlsToBlock`.
+Clears all registered patterns of urls to block.
 
 ### RequestInterceptor.setRequestBlocker(requestBlocker)
-- requestBlocker \<IRequestBlocker\>
+- `requestBlocker` \<IRequestBlocker\>
 
 Allows you to replace the default RequestBlocker by your own implementation.
 
@@ -86,7 +92,7 @@ Allows you to replace the default RequestBlocker by your own implementation.
 ### RequestSpy.isMatchingRequest(request, matcher)
 - request \<Request\> request object provided by puppeteer
 - matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the RequestSpy matches the request url  
+- returns: \<boolean\> returns true if any pattern provided to the `RequestSpy` matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches the RequestSpy.
 
@@ -102,7 +108,7 @@ The `RequestInterceptor` calls this method when an interceptedRequest matches th
 
 ### ResponseFaker constructor(pattern, responseFake)
 - `pattern`: \<string|Array<string>>
-- `responseFake`: \<((request: Request) => RespondOptions | Promise<RespondOptions>) | RespondOptions> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
+- `responseFake`: \<\(\(request: Request\) => RespondOptions | Promise\<RespondOptions\>\) | RespondOptions\> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
 
 ### ResponseFaker.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the faker
@@ -115,7 +121,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 ### ResponseFaker.isMatchingRequest(request, matcher)
 - request \<Request\> request object provided by puppeteer
 - matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the ResponseFaker matches the request url  
+- returns: \<boolean\> returns true if any pattern provided to the `ResponseFaker` matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
@@ -126,7 +132,7 @@ The `RequestInterceptor` calls this method to determine if an interceptedRequest
 
 ### ResponseModifier constructor(pattern, responseModifierCallback)
 - `pattern`: \<string|Array<string>>
-- `responseModifierCallback`: \<(response: string, request: Request) => string | Promise<string>>
+- `responseModifierCallback`: \<\(err: Error | undefined, response: string, request: Request\) => string | Promise<string>>
 
 ### ResponseModifier.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the faker
@@ -140,18 +146,19 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 ### ResponseModifier.isMatchingRequest(request, matcher)
 - request \<Request\> request object provided by puppeteer
 - matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the ResponseModifier matches the request url  
+- returns: \<boolean\> returns true if any pattern provided to the `ResponseModifier` matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
 -----
 
 ## class: RequestModifier implements IRequestModifier
-`RequestModifier` is used to change the matched request to a different request. 
+`RequestModifier` is used to change the request when matched to a specific pattern. 
 
 ### RequestModifier constructor(pattern, responseModifierCallback)
 - `pattern`: \<string|Array\<string\>\>
 - `requestOverride`: \<((request: Request) => Promise<Overrides> | Overrides) | Overrides\>
+- `httpRequestFactory?`: \<IRequestFactory\> Factory to create a http request
 
 ### RequestModifier.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the modifier
@@ -165,24 +172,24 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 ### RequestModifier.isMatchingRequest(request, matcher)
 - request \<Request\> request object provided by puppeteer
 - matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the RequestModifier matches the request url  
+- returns: \<boolean\> returns true if any pattern provided to the `RequestModifier` matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 
 -----
 
 ## class: RequestRedirector implements IRequestModifier
-`RequestRedirector` is used to change the matched request to a different url. 
+`RequestRedirector` is used to change request url when matched to a specific pattern. 
 
 ### RequestRedirector constructor(pattern, redirectionUrl)
 - `pattern`: \<string|Array\<string\>\>
-- `requestOverride`: \<((request: Request) => string) | string\>
+- `redirectionUrl`: \<((request: Request) => Promise<string> | string) | string\>
 
 ### RequestRedirector.getPatterns()
 - returns: \<Array\<string\>\> return the `pattern` list of the modifier
 
 ### RequestRedirector.getOverride(request)
-- `request`: \<Request>
+- `request`: \<Request> request object provided by puppeteer
 - returns: \<Promise<Overrides>\> return the request overrides
  
 The `RequestInterceptor` calls this method when an interceptedUrl matches the pattern.
@@ -190,7 +197,7 @@ The `RequestInterceptor` calls this method when an interceptedUrl matches the pa
 ### RequestRedirector.isMatchingRequest(request, matcher)
 - request \<Request\> request object provided by puppeteer
 - matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the RequestRedirector matches the request url  
+- returns: \<boolean\> returns true if any pattern provided to the `RequestRedirector` matches the request url  
 
 The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
 

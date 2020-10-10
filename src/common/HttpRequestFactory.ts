@@ -2,11 +2,11 @@ import {ClientRequest, IncomingHttpHeaders, IncomingMessage, request as httpRequ
 import {request as httpsRequest} from 'https';
 import {Request, RespondOptions} from 'puppeteer';
 import {URL} from 'url';
-import {IRequestLoaderFactory} from '../interface/IRequestLoaderFactory';
+import {IRequestFactory} from '../interface/IRequestFactory';
 import {UrlAccessor} from './urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './urlAccessor/UrlAccessorResolver';
 
-export class HttpRequestFactory implements IRequestLoaderFactory {
+export class HttpRequestFactory implements IRequestFactory {
     private timeout: number;
 
     public constructor(timeout: number = 30000) {

@@ -1,8 +1,8 @@
 import {Overrides, Request, RespondOptions} from 'puppeteer';
 import {instanceOfRequestBlocker} from './common/interfaceValidators/instanceOfRequestBlocker';
-import {instanceOfRequestFaker} from './common/interfaceValidators/instanceOfRequestFaker';
 import {instanceOfRequestModifier} from './common/interfaceValidators/instanceOfRequestModifier';
 import {instanceOfRequestSpy} from './common/interfaceValidators/instanceOfRequestSpy';
+import {instanceOfResponseFaker} from './common/interfaceValidators/instanceOfResponseFaker';
 import {ILogger} from './common/Logger';
 import {resolveOptionalPromise} from './common/resolveOptionalPromise';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
@@ -74,8 +74,8 @@ export class RequestInterceptor {
     }
 
     public addFaker(responseFaker: IResponseFaker): void {
-        if (!instanceOfRequestFaker(responseFaker)) {
-            throw new Error('invalid RequestFaker provided. Please make sure to match the interface provided.');
+        if (!instanceOfResponseFaker(responseFaker)) {
+            throw new Error('invalid ResponseFaker provided. Please make sure to match the interface provided.');
         }
 
         this.responseFakers.push(responseFaker);

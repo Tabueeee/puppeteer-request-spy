@@ -396,7 +396,7 @@ describe('puppeteer-request-spy: integration', function (): void {
             assert.ok(logs.indexOf('Error: Request Interception is not enabled!') > -1);
         });
 
-        it('RequestFaker faking request without requestInterception flag', async (): Promise<void> => {
+        it('ResponseFaker faking request without requestInterception flag', async (): Promise<void> => {
             let logs: Array<string> = [];
 
             let responseFaker: ResponseFaker = new ResponseFaker('*remote*', {

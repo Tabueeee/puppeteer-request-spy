@@ -15,22 +15,24 @@
 npm install puppeteer-request-spy --save-dev
 ```
 
-## Table of Content
+## Table Of Content
 
-- [Spying on requests](#usage)
-- [Altering requests](#altering-requests)
-    - [Modifying requests](#modifying-requests)
-    - [Redirecting requests](#redirecting-requests)
-    - [Blocking requests](#blocking-requests)
-- [Altering responses](#altering-responses)
-    - [Faking responses](#faking-responses)
-    - [Modifying responses](#modifying-responses)
-- [Advanced usage](#advanced-usage)
+- [Spying On Requests](#usage)
+- [Altering Requests](#altering-requests)
+    - [Modifying Requests](#modifying-requests)
+    - [Redirecting Requests](#redirecting-requests)
+    - [Blocking Requests](#blocking-requests)
+- [Altering Responses](#altering-responses)
+    - [Faking Responses](#faking-responses)
+    - [Modifying Responses](#modifying-responses)
+- [Asynchronous Options](#asynchronous-options)
+- [Interception Order](#requestinterceptor-request-interception-order)
+- [Advanced Usage](#advanced-usage)
 - [Full API](./documentation/API.md)
 
 ## Usage
 
-### Spying on requests with a KeywordMatcher 
+### Spying On Requests With A KeywordMatcher 
 First create a new `RequestInterceptor` with a `matcher` function and an optional logger. 
 ```js
 function KeywordMatcher(testee, keyword) {
@@ -73,39 +75,6 @@ Note
 
 
 ### Altering Requests
-
-All ResponseFakers and ResponseModifiers now accept a callback for resolving the passed options. This callback can also be async or return a promise. 
-
-```js
-// static options
-let requestRedirector = new RequestRedirector(
-    '/ajax/some-request',
-    'some/other/url'
-);                  
-
-// callback options
-let requestModifier = new RequestModifier(
-    '/ajax/some-request',
-    (matchedRequest) => ({url: '/ajax/some-different-request'})
-);  
-  
-// async callback options
-let requestRedirector = new RequestRedirector(
-    '/ajax/some-request',
-     async (matchedRequest) => 'some/new/url'
-);   
-               
-// promise callback options
-let responseFaker = new ResponseFaker(
-    '/ajax/some-request',
-    (matchedRequest) => Promise.resolve(({
-        status: 200, 
-        contentType: 'application/json',
-        body: JSON.stringify({successful: false, payload: []})
-    }))
-);                                                        
-```
-
 
 #### Modifying Requests
 Intercepted requests can be modified by passing an overrides object to the RequestModifier. The response overrides have to match the Overrides object as specified in the official [puppeteer API](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#httprequestcontinueoverrides).
@@ -170,7 +139,41 @@ Note:
 
 The ResponseModifier uses the IResponseFaker interface.
 
-## RequestInterceptor request interception order:
+### Asynchronous Options
+
+All ResponseFakers and ResponseModifiers now accept a callback for resolving the passed options. This callback can also be async or return a promise. 
+
+```js
+// static options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+    'some/other/url'
+);                  
+
+// callback options
+let requestModifier = new RequestModifier(
+    '/ajax/some-request',
+    (matchedRequest) => ({url: '/ajax/some-different-request'})
+);  
+  
+// async callback options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+     async (matchedRequest) => 'some/new/url'
+);   
+               
+// promise callback options
+let responseFaker = new ResponseFaker(
+    '/ajax/some-request',
+    (matchedRequest) => Promise.resolve(({
+        status: 200, 
+        contentType: 'application/json',
+        body: JSON.stringify({successful: false, payload: []})
+    }))
+);                                                        
+```
+
+## RequestInterceptor Request Interception Order:
 
 ![image](./documentation/activity.png)
 
@@ -178,11 +181,8 @@ The ResponseModifier uses the IResponseFaker interface.
 
 As long as you follow the interfaces provided in the [github repository](./src/interface) you can create your own Spies, Fakers, Modifiers or Blocker.
 
-
-````js 
-const prs = require('..');
-
-let interceptor = new prs.RequestInterceptor(
+````js
+let interceptor = new RequestInterceptor(
     (testee, pattern) => testee.indexOf(pattern) > -1
 );
 
@@ -204,10 +204,9 @@ interceptor.addRequestModifier({
 
 interceptor.setRequestBlocker({
     shouldBlockRequest: (_request, _matcher) => true,
-    clearUrlsToBlock: () => undefined
+    clearUrlsToBlock: () => undefined,
     addUrlsToBlock: (urlsToBlock) => undefined
 });
-
 ````
 
 ### Minimatch

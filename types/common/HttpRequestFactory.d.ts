@@ -1,6 +1,6 @@
 import { Request, RespondOptions } from 'puppeteer';
-import { IRequestLoaderFactory } from '../interface/IRequestLoaderFactory';
-export declare class HttpRequestFactory implements IRequestLoaderFactory {
+import { IRequestFactory } from '../interface/IRequestFactory';
+export declare class HttpRequestFactory implements IRequestFactory {
     private timeout;
     constructor(timeout?: number);
     createRequest(request: Request): Promise<RespondOptions & {
