@@ -50,7 +50,7 @@ describe('example-block', function () {
             body: '<div>some static html</div>'
         });
 
-        jsonResponseFaker = new ResponseFaker('**/*.jpg', {
+        jsonResponseFaker = new ResponseFaker('**/*.json', {
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify({data: []})

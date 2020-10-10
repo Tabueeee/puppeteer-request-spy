@@ -33,4 +33,14 @@ describe('module: UrlAccessorResolver', (): void => {
         assert.ok(urlAccessor instanceof UrlFunctionAccessor);
         assert.strictEqual(urlAccessor.getUrlFromRequest(<Request> request), 'any-url');
     });
+
+    it('running test twice provides same cached accessor', async (): Promise<void> => {
+        let request: TestDouble<Request> = getRequestDouble();
+        let UrlAccessorResolver: any = (await import('../../src/common/urlAccessor/UrlAccessorResolver')).UrlAccessorResolver;
+        let urlAccessor1: UrlAccessor = UrlAccessorResolver.getUrlAccessor(<Request> request);
+        let urlAccessor2: UrlAccessor = UrlAccessorResolver.getUrlAccessor(<Request> request);
+
+        assert.deepStrictEqual(urlAccessor1, urlAccessor2);
+        assert.ok(urlAccessor1 === urlAccessor2);
+    });
 });

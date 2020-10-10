@@ -1,6 +1,6 @@
 import { Request } from 'puppeteer';
 import { IRequestBlocker } from './interface/IRequestBlocker';
-import { RequestMatcher } from './interface/RequestMatcher';
+import { RequestMatcher } from './types/RequestMatcher';
 export declare class RequestBlocker implements IRequestBlocker {
     private urlsToBlock;
     shouldBlockRequest(request: Request, matcher: RequestMatcher): boolean;

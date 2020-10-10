@@ -1,8 +1,6 @@
-
 const promisify = require('util').promisify;
 const glob      = promisify(require('glob'));
 const del       = require('del');
-
 
 (async () => {
     try {

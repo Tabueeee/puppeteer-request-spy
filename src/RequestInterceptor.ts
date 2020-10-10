@@ -1,24 +1,27 @@
-import {Request} from 'puppeteer';
+import {Overrides, Request, RespondOptions} from 'puppeteer';
 import {instanceOfRequestBlocker} from './common/interfaceValidators/instanceOfRequestBlocker';
-import {instanceOfRequestFaker} from './common/interfaceValidators/instanceOfRequestFaker';
+import {instanceOfRequestModifier} from './common/interfaceValidators/instanceOfRequestModifier';
 import {instanceOfRequestSpy} from './common/interfaceValidators/instanceOfRequestSpy';
+import {instanceOfResponseFaker} from './common/interfaceValidators/instanceOfResponseFaker';
 import {ILogger} from './common/Logger';
+import {resolveOptionalPromise} from './common/resolveOptionalPromise';
 import {UrlAccessor} from './common/urlAccessor/UrlAccessor';
 import {UrlAccessorResolver} from './common/urlAccessor/UrlAccessorResolver';
 import {VoidLogger} from './common/VoidLogger';
 import {IRequestBlocker} from './interface/IRequestBlocker';
-import {IResponseFaker} from './interface/IRequestFaker';
+import {IRequestModifier} from './interface/IRequestModifier';
 import {IRequestSpy} from './interface/IRequestSpy';
-import {RequestMatcher} from './interface/RequestMatcher';
+import {IResponseFaker} from './interface/IResponseFaker';
 import {RequestBlocker} from './RequestBlocker';
+import {RequestMatcher} from './types/RequestMatcher';
 
 export class RequestInterceptor {
 
     private requestSpies: Array<IRequestSpy> = [];
     private responseFakers: Array<IResponseFaker> = [];
+    private requestModifiers: Array<IRequestModifier> = [];
     private matcher: RequestMatcher;
     private logger: ILogger;
-    private urlAccessor: UrlAccessor | undefined;
     private requestBlocker: IRequestBlocker;
 
     public constructor(matcher: RequestMatcher, logger?: ILogger) {
@@ -32,18 +35,29 @@ export class RequestInterceptor {
     }
 
     public async intercept(interceptedRequest: Request): Promise<void> {
-        this.matchSpies(interceptedRequest);
+        await this.matchSpies(interceptedRequest);
 
-        if (this.requestBlocker.shouldBlockRequest(interceptedRequest, this.matcher)) {
+        if (await resolveOptionalPromise<boolean>(this.requestBlocker.shouldBlockRequest(interceptedRequest, this.matcher))) {
             await this.blockUrl(interceptedRequest);
 
             return;
         }
 
-        let responseFaker: undefined | IResponseFaker = this.getMatchingFaker(interceptedRequest);
+        let requestOverride: Overrides | undefined = await this.getMatchingOverride(interceptedRequest);
 
+        if (typeof requestOverride !== 'undefined') {
+            let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
+            await interceptedRequest.continue(requestOverride);
+            this.logger.log(`modified: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
+
+            return;
+        }
+
+        let responseFaker: undefined | IResponseFaker = await this.getMatchingFaker(interceptedRequest);
         if (typeof responseFaker !== 'undefined') {
-            await interceptedRequest.respond(responseFaker.getResponseFake(interceptedRequest));
+            let responseFake: RespondOptions | Promise<RespondOptions> = responseFaker.getResponseFake(interceptedRequest);
+            await interceptedRequest.respond(await resolveOptionalPromise<RespondOptions>(responseFake));
+            this.logger.log(`faked: ${interceptedRequest.url()}`);
 
             return;
         }
@@ -60,11 +74,19 @@ export class RequestInterceptor {
     }
 
     public addFaker(responseFaker: IResponseFaker): void {
-        if (!instanceOfRequestFaker(responseFaker)) {
-            throw new Error('invalid RequestFaker provided. Please make sure to match the interface provided.');
+        if (!instanceOfResponseFaker(responseFaker)) {
+            throw new Error('invalid ResponseFaker provided. Please make sure to match the interface provided.');
         }
 
         this.responseFakers.push(responseFaker);
+    }
+
+    public addRequestModifier(requestModifier: IRequestModifier): void {
+        if (!instanceOfRequestModifier(requestModifier)) {
+            throw new Error('invalid RequestModifier provided. Please make sure to match the interface provided.');
+        }
+
+        this.requestModifiers.push(requestModifier);
     }
 
     public block(urlsToBlock: Array<string> | string): void {
@@ -77,6 +99,10 @@ export class RequestInterceptor {
 
     public clearFakers(): void {
         this.responseFakers = [];
+    }
+
+    public clearRequestModifiers(): void {
+        this.requestModifiers = [];
     }
 
     public clearUrlsToBlock(): void {
@@ -96,17 +122,9 @@ export class RequestInterceptor {
         this.requestBlocker = requestBlocker;
     }
 
-    private getUrlAccessor(interceptedRequest: Request): UrlAccessor {
-        if (typeof this.urlAccessor === 'undefined') {
-            this.urlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
-        }
-
-        return this.urlAccessor;
-    }
-
-    private getMatchingFaker(interceptedRequest: Request): IResponseFaker | undefined {
+    private async getMatchingFaker(interceptedRequest: Request): Promise<IResponseFaker | undefined> {
         for (let faker of this.responseFakers) {
-            if (faker.isMatchingRequest(interceptedRequest, this.matcher)) {
+            if (await resolveOptionalPromise<boolean>(faker.isMatchingRequest(interceptedRequest, this.matcher))) {
                 return faker;
             }
         }
@@ -114,31 +132,44 @@ export class RequestInterceptor {
         return undefined;
     }
 
-    private matchSpies(interceptedRequest: Request): void {
+    private async matchSpies(interceptedRequest: Request): Promise<void> {
         for (let spy of this.requestSpies) {
-            if (spy.isMatchingRequest(interceptedRequest, this.matcher)) {
-                spy.addMatch(interceptedRequest);
+            if (await resolveOptionalPromise<boolean>(spy.isMatchingRequest(interceptedRequest, this.matcher))) {
+                await resolveOptionalPromise(spy.addMatch(interceptedRequest));
             }
         }
     }
 
+    private async getMatchingOverride(interceptedRequest: Request): Promise<Overrides | undefined> {
+        let requestOverride: Overrides | undefined;
+
+        for (let requestModifier of this.requestModifiers) {
+            if (await resolveOptionalPromise<boolean>(requestModifier.isMatchingRequest(interceptedRequest, this.matcher))) {
+                requestOverride = await resolveOptionalPromise<Overrides>(requestModifier.getOverride(interceptedRequest));
+            }
+        }
+
+        return requestOverride;
+    }
+
     private async blockUrl(interceptedRequest: Request): Promise<void> {
-        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
+        let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
+
         try {
             await interceptedRequest.abort();
             this.logger.log(`aborted: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
-            this.logger.log((<Error> error).toString());
+            this.logger.log((<Error>error).toString());
         }
     }
 
     private async acceptUrl(interceptedRequest: Request): Promise<void> {
-        let urlAccessor: UrlAccessor = this.getUrlAccessor(interceptedRequest);
+        let urlAccessor: UrlAccessor = UrlAccessorResolver.getUrlAccessor(interceptedRequest);
         try {
             await interceptedRequest.continue();
             this.logger.log(`loaded: ${urlAccessor.getUrlFromRequest(interceptedRequest)}`);
         } catch (error) {
-            this.logger.log((<Error> error).toString());
+            this.logger.log((<Error>error).toString());
         }
     }
 }

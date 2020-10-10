@@ -13,7 +13,7 @@ xhr.addEventListener("readystatechange", function () {
     }
 });
 
-xhr.open("GET", "/remote.html");
+xhr.open("GET", "/fakes/remote.html");
 xhr.setRequestHeader("cache-control", "no-cache");
 
 xhr.send(data);

@@ -133,3 +133,4 @@ jspm_packages/
 .env
 
 build/
+notes.md

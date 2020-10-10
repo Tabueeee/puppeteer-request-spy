@@ -2,11 +2,11 @@
 [![Build Status](https://travis-ci.org/Tabueeee/puppeteer-request-spy.svg?branch=master)](https://travis-ci.org/Tabueeee/puppeteer-request-spy)
 [![Coverage Status](https://coveralls.io/repos/github/Tabueeee/puppeteer-request-spy/badge.svg?branch=master)](https://coveralls.io/github/Tabueeee/puppeteer-request-spy?branch=master)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FTabueeee%2Fpuppeteer-request-spy?ref=badge_shield)
-> With puppeteer-request-spy you can easily watch, fake or block requests from puppeteer matching patterns. 
+> With puppeteer-request-spy you can easily watch, fake, modify or block requests from puppeteer matching patterns. 
 
 - allows you to write tests verifying specific resources are loaded as expected
 - allows you to exclude unneeded requests from tests, speeding them up significantly
-- allows you to alter a request's response with custom content and http status
+- allows you to alter requests and responses with custom content and http status
 - avoids conflicts resulting from already aborted / continued or responded requests
 
 ## Install
@@ -14,10 +14,25 @@
 ```bash
 npm install puppeteer-request-spy --save-dev
 ```
-                                  
+
+## Table Of Content
+
+- [Spying On Requests](#usage)
+- [Altering Requests](#altering-requests)
+    - [Modifying Requests](#modifying-requests)
+    - [Redirecting Requests](#redirecting-requests)
+    - [Blocking Requests](#blocking-requests)
+- [Altering Responses](#altering-responses)
+    - [Faking Responses](#faking-responses)
+    - [Modifying Responses](#modifying-responses)
+- [Asynchronous Options](#asynchronous-options)
+- [Interception Order](#requestinterceptor-request-interception-order)
+- [Advanced Usage](#advanced-usage)
+- [Full API](./documentation/API.md)
+
 ## Usage
 
-### Spying on requests with a KeywordMatcher 
+### Spying On Requests With A KeywordMatcher 
 First create a new `RequestInterceptor` with a `matcher` function and an optional logger. 
 ```js
 function KeywordMatcher(testee, keyword) {
@@ -58,10 +73,45 @@ for (let match of imagesSpy.getMatchedRequests()) {
 Note
 > Since unhandled Promise rejections causes the node process to keep running after test failure, the `RequestInterceptor` will catch and log puppeteer's exception, if the `requestInterception` flag is not set.
 
+
+### Altering Requests
+
+#### Modifying Requests
+Intercepted requests can be modified by passing an overrides object to the RequestModifier. The response overrides have to match the Overrides object as specified in the official [puppeteer API](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#httprequestcontinueoverrides).
+
+```js
+let requestModifier = new RequestModifier('/ajax/some-post-request', {
+  url: '/ajax/some-get-request',
+  method: 'GET',
+  postData: '',
+  headers: {}
+});                  
+
+requestInterceptor.addRequestModifier(requestModifier);
+```
+
+#### Redirecting Requests
+If you just want to replace the url of an intercepted request, you can use the RequestRedirector.
+
+```js
+let requestRedirector = new RequestRedirector('/ajax/some-request', 'some/new/url');                  
+
+requestInterceptor.addRequestModifier(requestRedirector);
+```
+
+The RequestRedirector uses the IRequestModifier interface.
+
+#### Blocking Requests    
+Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over overriding requests or faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+
+```js
+requestInterceptor.block(['scripts', 'track', '.png']);      
+```
+
 ### Altering Responses
 
 #### Faking Responses
-The response of intercepted requests can be replaced by adding a ResponseFaker to the RequestInterceptor. The fake response has to match the Response object as specified in the official [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse).
+The response of intercepted requests can be replaced by adding a ResponseFaker to the RequestInterceptor. The fake response has to match the Response object as specified in the official [puppeteer API](https://github.com/puppeteer/puppeteer/blob/main/docs/api.md#httprequestrespondresponse).
 ```js
 let responseFaker = new ResponseFaker('/ajax/some-request', {
     status: 200,
@@ -71,14 +121,94 @@ let responseFaker = new ResponseFaker('/ajax/some-request', {
 
 requestInterceptor.addFaker(responseFaker);
 ```
-For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/blob/master/examples/fake-test.spec.js).
+For further details on how to replace different formats of data like images, text or html, please refer to the examples provided in the [github repository](./examples/fake-test.spec.js).
 
-#### Blocking requests    
-Optionally you can add `patterns` to block requests. Blocking requests speeds up page load since no data is loaded. Blocking requests takes precedence over faking responses, so any request blocked will not be replaced even when matching a `ResponseFaker`. Blocked or faked requests will still be counted by a `RequestSpy` with a matching pattern.  
+#### Modifying Responses
+It's also possible to replace the content of a response instead of replacing it:
 
 ```js
-requestInterceptor.block(['scripts', 'track', '.png']);      
-```    
+let responseModifier = new ResponseModifier('/ajax/some-request', (response, request) => {
+    return response.replace('</head>', '<script></script></head>');
+});
+
+requestInterceptor.addFaker(responseModifier);
+```                   
+
+Note:
+> The request is currently loaded in the node environment, not the browser environment.
+
+The ResponseModifier uses the IResponseFaker interface.
+
+### Asynchronous Options
+
+All ResponseFakers and ResponseModifiers now accept a callback for resolving the passed options. This callback can also be async or return a promise. 
+
+```js
+// static options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+    'some/other/url'
+);                  
+
+// callback options
+let requestModifier = new RequestModifier(
+    '/ajax/some-request',
+    (matchedRequest) => ({url: '/ajax/some-different-request'})
+);  
+  
+// async callback options
+let requestRedirector = new RequestRedirector(
+    '/ajax/some-request',
+     async (matchedRequest) => 'some/new/url'
+);   
+               
+// promise callback options
+let responseFaker = new ResponseFaker(
+    '/ajax/some-request',
+    (matchedRequest) => Promise.resolve(({
+        status: 200, 
+        contentType: 'application/json',
+        body: JSON.stringify({successful: false, payload: []})
+    }))
+);                                                        
+```
+
+## RequestInterceptor Request Interception Order:
+
+![image](./documentation/activity.png)
+
+## Advanced Usage
+
+As long as you follow the interfaces provided in the [github repository](./src/interface) you can create your own Spies, Fakers, Modifiers or Blocker.
+
+````js
+let interceptor = new RequestInterceptor(
+    (testee, pattern) => testee.indexOf(pattern) > -1
+);
+
+let count = 0;
+interceptor.addSpy({
+    isMatchingRequest: (_request, _matcher) => true,
+    addMatch: (_request) => count++
+});
+
+interceptor.addFaker({
+    isMatchingRequest: (_request, _matcher) => true,
+    getResponseFake: (request) => ({body: ''})
+});
+
+interceptor.addRequestModifier({
+    isMatchingRequest: (_request, _matcher) => true,
+    getOverride: (interceptedRequest) => ({url: ''})
+});
+
+interceptor.setRequestBlocker({
+    shouldBlockRequest: (_request, _matcher) => true,
+    clearUrlsToBlock: () => undefined,
+    addUrlsToBlock: (urlsToBlock) => undefined
+});
+````
+
 ### Minimatch
 puppeteer-request-spy works great with [minimatch](https://github.com/isaacs/minimatch), it can be passed as the `matcher` function.
 ```js
@@ -101,127 +231,13 @@ for (let matchedRequest of cssSpy.getMatchedRequests()) {
     assert.ok(matchedRequest.response().status() === 200);
 }
 ```
-## API
+# API
 
-### class: RequestInterceptor
-The `RequestInterceptor` will call all spies, fakers and blocker to dertermine if an intercepted request matches. against the `matcher` function and notify all spies with a matching pattern and block requests matching any pattern in `urlsToBlock`.
-
-#### RequestInterceptor constructor(matcher, logger?)    
-- `matcher`: \<(url: string, pattern: string) =\> boolean\>\>
-- `logger?`: \<{log: (text: string) =\> void}\>
-
-The `matcher` will be called for every url, testing the url against patterns of any `RequestSpy` provided and also any url added to `urlsToBlock`.
-
-The `logger` if provided will output any requested url with a 'loaded' or 'aborted' prefix and any exception caused by puppeteer's abort and continue functions.
-#### RequestInterceptor.intercept(interceptedRequest)
-- interceptedRequest: <Request> interceptedRequest provided by puppeteer's 'request' event
-
-Function to be registered with puppeteer's request event.
-
-#### RequestInterceptor.addSpy(requestSpy)   
-- requestSpy: \<IRequestSpy> spy to register
-
-Register a spy with the `RequestInterceptor`.
-                                            
-#### RequestInterceptor.clearSpies()
-Clears all registered spies.
-
-#### RequestInterceptor.addFaker(requestFaker)
-- responseFaker: \<IResponseFaker> faker to register   
-
-#### RequestInterceptor.clearFakers()
-Clears all registered fakers.
-
-#### RequestInterceptor.block(urlsToBlock)
-- urlsToBlock: \<Array\<string\> | \<string\>\> urls to be blocked if matched
-
-`block` will always add urls to the list `urlsToBlock`. Passed arrays will be merged with `urlsToBlock`.
-
-#### RequestInterceptor.setUrlsToBlock(urlsToBlock)
-- urlsToBlock: <Array\<string>> setter for `urlsToBlock`
-
-#### RequestInterceptor.clearUrlsToBlock()
-Clears all registered patterns in `urlsToBlock`.
-
-#### RequestInterceptor.setRequestBlocker(requestBlocker)
-- requestBlocker \<IRequestBlocker\>
-
-Allows you to replace the default RequestBlocker by your own implementation.
-
-### class: RequestSpy implements IRequestSpy
-`RequestSpy` is used to count and verify intercepted requests matching a specific pattern.
-#### RequestSpy constructor(pattern)
-- `pattern`: \<string|Array\<string>>
-
-`pattern` passed to the `matcher` function of the `RequestInterceptor`.
-
-#### RequestSpy.hasMatch()
-- returns: \<boolean> returns whether any url matched the `pattern`
-
-#### RequestSpy.getMatchedUrls()
-- returns: \<Array\<string\>\> returns a list of urls that matched the `pattern`
-
-#### RequestSpy.getMatchedRequests()
-- returns: \<Array\<Request\>\> returns a list of requests that matched the `pattern`
-
-#### RequestSpy.getMatchCount()
-- returns: \<number> number of urls that matched the `pattern` 
-
-#### RequestSpy.isMatchingRequest(request, matcher)
-- request \<Request\> request object provided by puppeteer
-- matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the RequestSpy matches the request url  
-
-The `RequestInterceptor` calls this method to determine if an interceptedRequest matches the RequestSpy.
-                                          
-#### RequestSpy.addMatch(matchedRequest)
-- matchedRequest: \<Request> request that was matched
-
-The `RequestInterceptor` calls this method when an interceptedRequest matches the pattern.
-
-### class: ResponseFaker implements IResponseFaker
-`ResponseFaker` is used to provide a fake response when matched to a specific pattern. 
-
-#### ResponseFaker constructor(pattern, responseFake)
-- `pattern`: \<string|Array<string>>
-- `responseFake`: \<`Response`> for details refer to [puppeteer API](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#requestrespondresponse)
-
-#### ResponseFaker.getPatterns()
-- returns: \<Array\<string\>\> return the `pattern` list of the faker
-
-#### ResponseFaker.getResponseFake()
-- returns: \<Response\> return the fake response
- 
-The `RequestInterceptor` calls this method when an interceptedUrl matches the pattern.
-     
-#### ResponseFaker.isMatchingRequest(request, matcher)
-- request \<Request\> request object provided by puppeteer
-- matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-- returns: \<boolean\> returns true if any pattern provided to the ResponseFaker matches the request url  
-
-The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
-
-### class: RequestBlocker implements IResponseBlocker 
-`RequestBlocker` is used to by the RequestInterceptor to match requests to block. 
-
-#### RequestBlocker.shouldBlockRequest(request, matcher)
-- request \<Request\> request object provided by puppeteer
-- matcher \<(url: string, pattern: string) =\> boolean\>\> matching function passed to RequestInterceptor's constructor
-
-The `RequestInterceptor` calls this method to determine if an interceptedRequest matches.
-
-#### RequestBlocker.addUrlsToBlock(urls)
-- urls \<Array<string> | string\>
-
-Adds new urls to the block list.
-
-#### RequestBlocker.clearUrlsToBlock()
-
-Removes all entries of the block list.
+Full API can be found [here](./documentation/API.md).
 
 # Examples
 
-There are some usage examples included in the [github repository](https://github.com/Tabueeee/puppeteer-request-spy/tree/master/examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.
+There are some usage examples included in the [github repository](./examples). Check them out to get started with writing a simple test with puppeteer and puppeteer-request-spy.
 
 # Related
  - [minimatch](https://github.com/isaacs/minimatch) - For easily matching path-like strings to patterns.

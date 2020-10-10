@@ -1,14 +1,14 @@
 import {Request} from 'puppeteer';
-import {RequestMatcher} from './RequestMatcher';
+import {RequestMatcher} from '../types/RequestMatcher';
 
 export interface IRequestBlocker {
     /**
      * @param request <Request>: request to get the url from.
-     * @param matcher <(url: string, pattern: string): boolean)>: matches the url with the pattern to block.
+     * @param matcher <(url: string, pattern: string): Promise<boolean> | boolean)>: matches the url with the pattern to block.
      *
      * determines if a request should be blocked.
      */
-    shouldBlockRequest(request: Request, matcher: RequestMatcher): boolean;
+    shouldBlockRequest(request: Request, matcher: RequestMatcher): Promise<boolean> | boolean;
 
     /**
      * removes all patterns added to the RequestBlocker.

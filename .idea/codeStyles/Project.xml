@@ -14,7 +14,7 @@
       <option name="HTML_NEWLINE_BEFORE_FIRST_ATTRIBUTE" value="When multiline" />
       <option name="HTML_NEWLINE_AFTER_LAST_ATTRIBUTE" value="When multiline" />
     </HTMLCodeStyleSettings>
-    <JSCodeStyleSettings>
+    <JSCodeStyleSettings version="0">
       <option name="ALIGN_VAR_STATEMENTS" value="2" />
       <option name="USE_DOUBLE_QUOTES" value="false" />
     </JSCodeStyleSettings>
@@ -31,7 +31,7 @@
       <option name="BLANK_LINE_BEFORE_RETURN_STATEMENT" value="true" />
       <option name="FORCE_SHORT_DECLARATION_ARRAY_STYLE" value="true" />
     </PHPCodeStyleSettings>
-    <TypeScriptCodeStyleSettings>
+    <TypeScriptCodeStyleSettings version="0">
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
       <option name="FIELD_PREFIX" value="" />
       <option name="USE_PUBLIC_MODIFIER" value="true" />

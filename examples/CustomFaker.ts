@@ -1,6 +1,6 @@
-import {Request} from 'puppeteer';
-import {RespondOptions} from 'puppeteer';
-import {IResponseFaker, RequestMatcher} from 'puppeteer-request-spy';
+import {Request, RespondOptions} from 'puppeteer';
+// import {IResponseFaker, RequestMatcher} from 'puppeteer-request-spy';
+import {IResponseFaker, RequestMatcher} from '../..';
 
 export class CustomFaker implements IResponseFaker {
 
@@ -14,17 +14,19 @@ export class CustomFaker implements IResponseFaker {
         this.patterns = patterns;
     }
 
-    public getResponseFake(request: Request): RespondOptions {
-        return {
-            status: 200,
-            contentType: 'text/plain',
-            body: this.fakesMap[request.method()]
-        };
+    public getResponseFake(request: Request): RespondOptions | Promise<RespondOptions> {
+        return Promise.resolve(
+            {
+                status: 200,
+                contentType: 'text/plain',
+                body: this.fakesMap[request.method()]
+            }
+        );
     }
 
     public isMatchingRequest(request: Request, matcher: RequestMatcher): boolean {
         for (let pattern of this.patterns) {
-            if(matcher(request.url(), pattern)){
+            if (matcher(request.url(), pattern)) {
 
                 return true;
             }

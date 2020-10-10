@@ -4,8 +4,10 @@ import {Browser, LaunchOptions} from 'puppeteer';
 export class BrowserLauncher {
 
     private browser: Browser | undefined;
+    private initialized: boolean = false;
 
     public async initialize(options?: LaunchOptions): Promise<void> {
+        this.initialized = true;
         if (typeof options === 'undefined') {
             options = {
                 headless: true
@@ -21,12 +23,16 @@ export class BrowserLauncher {
         }
     }
 
-    public getBrowser(): Browser {
+    public async getBrowser(): Promise<Browser> {
         if (typeof this.browser === 'undefined') {
-            throw new Error('unable to initialize browser.');
+            if (this.initialized) {
+                throw new Error('unable to initialize browser.');
+            } else {
+                await this.initialize();
+            }
         }
 
-        return this.browser;
+        return Promise.resolve(<Browser> this.browser);
     }
 }
 
